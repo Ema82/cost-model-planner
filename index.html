@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cost Model Planner</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+      --color-bg:#f7f6f2; --color-surface:#f9f8f5; --color-surface-2:#fbfbf9; --color-surface-offset:#f3f0ec; --color-border:#d4d1ca; --color-divider:#dcd9d5;
+      --color-text:#28251d; --color-text-muted:#686761; --color-text-faint:#97958e; --color-text-inverse:#f9f8f4;
+      --color-primary:#01696f; --color-primary-hover:#0c4e54; --color-primary-highlight:#cedcd8;
+      --color-success:#437a22; --color-success-soft:#dbe8d3; --color-error:#a12c7b; --color-error-soft:#ecd7e3; --color-warning:#964219; --color-warning-soft:#ebddd4;
+      --radius-sm:0.375rem; --radius-md:0.5rem; --radius-lg:0.75rem; --radius-xl:1rem; --radius-full:9999px;
+      --shadow-sm:0 1px 2px oklch(0.2 0.01 80 / 0.06); --shadow-md:0 4px 12px oklch(0.2 0.01 80 / 0.08);
+      --font-body:'Satoshi', 'Inter', sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg:#171614; --color-surface:#1c1b19; --color-surface-2:#201f1d; --color-surface-offset:#1d1c1a; --color-border:#393836; --color-divider:#262523;
+      --color-text:#ece9e1; --color-text-muted:#b3afa7; --color-text-faint:#807c76; --color-text-inverse:#2b2a28;
+      --color-primary:#4f98a3; --color-primary-hover:#227f8b; --color-primary-highlight:#313b3b;
+      --color-success:#7ab45a; --color-success-soft:#273124; --color-error:#d163a7; --color-error-soft:#3e2733; --color-warning:#c3825f; --color-warning-soft:#3d2f29;
+      --shadow-sm:0 1px 2px oklch(0 0 0 / 0.2); --shadow-md:0 4px 12px oklch(0 0 0 / 0.3);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    body{font-family:var(--font-body);font-size:var(--text-base);line-height:1.55;background:var(--color-bg);color:var(--color-text)}
+    button,input,select,textarea{font:inherit;color:inherit}
+    button{cursor:pointer;border:none;background:none}
+    input,select{border:1px solid color-mix(in oklab, var(--color-text) 12%, transparent);background:var(--color-surface-2);border-radius:var(--radius-md);padding:0.78rem 0.9rem;min-height:44px;width:100%}
+    input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+    .app{max-width:1400px;margin:0 auto;padding:var(--space-6)}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6)}
+    .brand{display:flex;align-items:center;gap:var(--space-3)}
+    .logo{width:40px;height:40px;border-radius:12px;background:var(--color-primary-highlight);display:grid;place-items:center;color:var(--color-primary)}
+    .logo svg{width:24px;height:24px}
+    h1{font-size:var(--text-xl);line-height:1.1}
+    .muted{color:var(--color-text-muted)}
+    .layout{display:grid;grid-template-columns:360px 1fr;gap:var(--space-6)}
+    .panel{background:var(--color-surface);border:1px solid color-mix(in oklab, var(--color-text) 10%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm)}
+    .panel-inner{padding:var(--space-5)}
+    .stack{display:grid;gap:var(--space-4)}
+    .stack-lg{display:grid;gap:var(--space-6)}
+    .section-title{font-size:var(--text-lg);margin-bottom:var(--space-2)}
+    .field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3)}
+    .month-grid{display:grid;grid-template-columns:1.1fr repeat(6,0.9fr);gap:var(--space-2);align-items:center}
+    .month-grid.header{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted)}
+    .pill{display:inline-flex;align-items:center;gap:.45rem;padding:.35rem .7rem;border-radius:var(--radius-full);font-size:var(--text-xs);background:var(--color-primary-highlight);color:var(--color-primary);font-weight:700}
+    .cta{background:var(--color-primary);color:var(--color-text-inverse);padding:0.9rem 1rem;border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:700}
+    .cta:hover{background:var(--color-primary-hover)}
+    .ghost{padding:0.9rem 1rem;border-radius:var(--radius-md);background:var(--color-surface-offset);font-size:var(--text-sm);font-weight:700}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4)}
+    .kpi{padding:var(--space-5);background:var(--color-surface);border:1px solid color-mix(in oklab, var(--color-text) 10%, transparent);border-radius:var(--radius-lg)}
+    .kpi .label{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:var(--space-2)}
+    .kpi .value{font-size:var(--text-lg);font-weight:700;font-variant-numeric:tabular-nums lining-nums}
+    .kpi .sub{margin-top:var(--space-2);font-size:var(--text-sm);color:var(--color-text-muted)}
+    .table-wrap{overflow:auto;border-radius:var(--radius-lg);border:1px solid color-mix(in oklab, var(--color-text) 10%, transparent)}
+    table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums lining-nums;background:var(--color-surface)}
+    th,td{padding:0.85rem 0.9rem;border-bottom:1px solid var(--color-divider);text-align:right;white-space:nowrap}
+    th:first-child,td:first-child{text-align:left}
+    thead th{position:sticky;top:0;background:var(--color-surface-2);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted)}
+    tbody tr:hover{background:color-mix(in oklab, var(--color-primary) 3%, var(--color-surface))}
+    .tag{display:inline-flex;padding:.25rem .55rem;border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:700}
+    .pos{background:var(--color-success-soft);color:var(--color-success)} .neg{background:var(--color-error-soft);color:var(--color-error)} .warn{background:var(--color-warning-soft);color:var(--color-warning)}
+    .helper{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .footer-note{font-size:var(--text-sm);color:var(--color-text-muted);padding-top:var(--space-2)}
+    @media (max-width: 1080px){.layout{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width: 640px){.app{padding:var(--space-4)}.field-grid,.month-grid{grid-template-columns:1fr}.month-grid.header{display:none}.kpis{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <a href="#main" class="sr-only">Vai al contenuto</a>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Logo cost model">
+            <path d="M4 17 9 12l4 3 7-8"/>
+            <path d="M4 20h16"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Cost Model Planner</h1>
+          <p class="muted">Prototipo per preventivo, consuntivo e carry-over mensile.</p>
+        </div>
+      </div>
+      <button type="button" class="ghost" data-theme-toggle aria-label="Cambia tema">Tema</button>
+    </header>
+
+    <main id="main" class="layout">
+      <section class="panel">
+        <div class="panel-inner stack-lg">
+          <div>
+            <span class="pill">MVP pronto</span>
+            <p class="helper" style="margin-top:0.8rem;">Modifica costi, mesi e giornate. Il calcolo si aggiorna in tempo reale.</p>
+          </div>
+
+          <div class="stack">
+            <div>
+              <h2 class="section-title">Costi per livello</h2>
+              <p class="helper">Il motore converte automaticamente i delta economici nel livello target.</p>
+            </div>
+            <div class="field-grid">
+              <label><span class="helper">Costo A</span><input id="costA" type="number" step="0.01" value="498.13"></label>
+              <label><span class="helper">Costo B</span><input id="costB" type="number" step="0.01" value="341.49"></label>
+              <label><span class="helper">Costo C</span><input id="costC" type="number" step="0.01" value="246.33"></label>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div>
+              <h2 class="section-title">Regola di conversione</h2>
+              <p class="helper">Scegli il livello su cui tradurre il risparmio netto o l'extra costo.</p>
+            </div>
+            <label>
+              <span class="helper">Livello target</span>
+              <select id="targetLevel">
+                <option value="C" selected>C</option>
+                <option value="B">B</option>
+                <option value="A">A</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="stack">
+            <div>
+              <h2 class="section-title">Mesi</h2>
+              <p class="helper">Ogni riga contiene preventivato e consuntivato per i tre livelli.</p>
+            </div>
+            <div id="monthInputs" class="stack"></div>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <button class="cta" id="addMonthBtn" type="button">Aggiungi mese</button>
+              <button class="ghost" id="resetBtn" type="button">Reset demo</button>
+              <button class="ghost" id="exportBtn" type="button">Esporta CSV</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stack-lg">
+        <div class="kpis">
+          <article class="kpi">
+            <div class="label">Delta totale</div>
+            <div class="value" id="totalDeltaEuro">0,00 €</div>
+            <div class="sub">Preventivo - consuntivo</div>
+          </article>
+          <article class="kpi">
+            <div class="label">Carry-over totale</div>
+            <div class="value" id="carryOverDays">0 gg</div>
+            <div class="sub" id="carryOverSub">Equivalente sul livello target</div>
+          </article>
+          <article class="kpi">
+            <div class="label">Mese migliore</div>
+            <div class="value" id="bestMonth">—</div>
+            <div class="sub" id="bestMonthSub">Nessun dato</div>
+          </article>
+          <article class="kpi">
+            <div class="label">Mese peggiore</div>
+            <div class="value" id="worstMonth">—</div>
+            <div class="sub" id="worstMonthSub">Nessun dato</div>
+          </article>
+        </div>
+
+        <section class="panel">
+          <div class="panel-inner stack">
+            <div>
+              <h2 class="section-title">Riepilogo mensile</h2>
+              <p class="helper">Il delta positivo indica risparmio rispetto al preventivo. Il delta negativo indica extra costo.</p>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mese</th>
+                    <th>Preventivo</th>
+                    <th>Consuntivo</th>
+                    <th>Delta €</th>
+                    <th>Carry-over</th>
+                    <th>A</th>
+                    <th>B</th>
+                    <th>C</th>
+                  </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+              </table>
+            </div>
+            <p class="footer-note">Formula usata: delta mese = costo preventivato - costo consuntivato; giornate equivalenti = delta / costo livello target.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const defaultState = {
+      costs: { A: 498.13, B: 341.49, C: 246.33 },
+      targetLevel: 'C',
+      months: [
+        { name: 'Maggio', planned: { C: 40, B: 57, A: 3 }, actual: { C: 45, B: 23, A: 5 } },
+        { name: 'Giugno', planned: { C: 50, B: 57, A: 3 }, actual: { C: 86, B: 15, A: 10 } },
+        { name: 'Luglio', planned: { C: 18, B: 46, A: 3 }, actual: { C: 18, B: 46, A: 3 } }
+      ]
+    };
+
+    let state = JSON.parse(JSON.stringify(defaultState));
+
+    const monthInputs = document.getElementById('monthInputs');
+    const resultsBody = document.getElementById('resultsBody');
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+
+    const euro = value => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(value || 0);
+    const num = value => new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
+    const days = value => `${num(value)} gg`;
+    const clean = value => Number.isFinite(+value) ? +value : 0;
+
+    function monthCard(month, index) {
+      return `
+        <div class="panel" data-month-index="${index}">
+          <div class="panel-inner stack">
+            <div style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap;">
+              <label style="flex:1;min-width:180px;">
+                <span class="helper">Nome mese</span>
+                <input type="text" data-field="name" data-index="${index}" value="${month.name}">
+              </label>
+              <button type="button" class="ghost" data-remove-month="${index}">Rimuovi</button>
+            </div>
+            <div class="month-grid header">
+              <div></div><div>Prev C</div><div>Prev B</div><div>Prev A</div><div>Cons C</div><div>Cons B</div><div>Cons A</div>
+            </div>
+            <div class="month-grid">
+              <div class="helper">Giornate</div>
+              <input type="number" step="0.01" data-index="${index}" data-scope="planned" data-level="C" value="${month.planned.C}">
+              <input type="number" step="0.01" data-index="${index}" data-scope="planned" data-level="B" value="${month.planned.B}">
+              <input type="number" step="0.01" data-index="${index}" data-scope="planned" data-level="A" value="${month.planned.A}">
+              <input type="number" step="0.01" data-index="${index}" data-scope="actual" data-level="C" value="${month.actual.C}">
+              <input type="number" step="0.01" data-index="${index}" data-scope="actual" data-level="B" value="${month.actual.B}">
+              <input type="number" step="0.01" data-index="${index}" data-scope="actual" data-level="A" value="${month.actual.A}">
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderMonthInputs() {
+      monthInputs.innerHTML = state.months.map(monthCard).join('');
+    }
+
+    function computeMonth(month) {
+      const plannedCost = month.planned.A * state.costs.A + month.planned.B * state.costs.B + month.planned.C * state.costs.C;
+      const actualCost = month.actual.A * state.costs.A + month.actual.B * state.costs.B + month.actual.C * state.costs.C;
+      const delta = plannedCost - actualCost;
+      const carryDays = delta / state.costs[state.targetLevel];
+      return {
+        name: month.name,
+        plannedCost,
+        actualCost,
+        delta,
+        carryDays,
+        variance: {
+          A: month.actual.A - month.planned.A,
+          B: month.actual.B - month.planned.B,
+          C: month.actual.C - month.planned.C
+        }
+      };
+    }
+
+    function renderResults() {
+      const rows = state.months.map(computeMonth);
+      resultsBody.innerHTML = rows.map(row => {
+        const cls = row.delta > 0 ? 'pos' : row.delta < 0 ? 'neg' : 'warn';
+        const label = row.delta > 0 ? 'Risparmio' : row.delta < 0 ? 'Extra' : 'Pari';
+        return `
+          <tr>
+            <td>${row.name}</td>
+            <td>${euro(row.plannedCost)}</td>
+            <td>${euro(row.actualCost)}</td>
+            <td><span class="tag ${cls}">${label}</span> <div style="margin-top:.35rem;">${euro(row.delta)}</div></td>
+            <td>${days(row.carryDays)} ${state.targetLevel}</td>
+            <td>${num(row.variance.A)}</td>
+            <td>${num(row.variance.B)}</td>
+            <td>${num(row.variance.C)}</td>
+          </tr>`;
+      }).join('');
+
+      const totalDelta = rows.reduce((acc, row) => acc + row.delta, 0);
+      const totalCarry = totalDelta / state.costs[state.targetLevel];
+      document.getElementById('totalDeltaEuro').textContent = euro(totalDelta);
+      document.getElementById('carryOverDays').textContent = `${num(totalCarry)} gg ${state.targetLevel}`;
+      document.getElementById('carryOverSub').textContent = `Conversione su livello ${state.targetLevel}`;
+
+      const best = [...rows].sort((a,b) => b.delta - a.delta)[0];
+      const worst = [...rows].sort((a,b) => a.delta - b.delta)[0];
+      document.getElementById('bestMonth').textContent = best ? best.name : '—';
+      document.getElementById('bestMonthSub').textContent = best ? `${euro(best.delta)} · ${days(best.carryDays)} ${state.targetLevel}` : 'Nessun dato';
+      document.getElementById('worstMonth').textContent = worst ? worst.name : '—';
+      document.getElementById('worstMonthSub').textContent = worst ? `${euro(worst.delta)} · ${days(worst.carryDays)} ${state.targetLevel}` : 'Nessun dato';
+    }
+
+    function syncControls() {
+      document.getElementById('costA').value = state.costs.A;
+      document.getElementById('costB').value = state.costs.B;
+      document.getElementById('costC').value = state.costs.C;
+      document.getElementById('targetLevel').value = state.targetLevel;
+      renderMonthInputs();
+      renderResults();
+    }
+
+    function exportCsv() {
+      const rows = state.months.map(computeMonth);
+      const header = ['mese','planned_cost','actual_cost','delta_euro','carry_days_target','delta_A_days','delta_B_days','delta_C_days','target_level'];
+      const csvRows = rows.map(r => [r.name, r.plannedCost, r.actualCost, r.delta, r.carryDays, r.variance.A, r.variance.B, r.variance.C, state.targetLevel]);
+      const csv = [header, ...csvRows].map(r => r.join(';')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cost-model-export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.addEventListener('input', (event) => {
+      const t = event.target;
+      if (t.id === 'costA' || t.id === 'costB' || t.id === 'costC') {
+        state.costs.A = clean(document.getElementById('costA').value);
+        state.costs.B = clean(document.getElementById('costB').value);
+        state.costs.C = clean(document.getElementById('costC').value);
+        renderResults();
+        return;
+      }
+      if (t.dataset.field === 'name') {
+        state.months[+t.dataset.index].name = t.value || `Mese ${+t.dataset.index + 1}`;
+        renderResults();
+        return;
+      }
+      if (t.dataset.index !== undefined && t.dataset.scope && t.dataset.level) {
+        state.months[+t.dataset.index][t.dataset.scope][t.dataset.level] = clean(t.value);
+        renderResults();
+      }
+    });
+
+    document.addEventListener('change', (event) => {
+      if (event.target.id === 'targetLevel') {
+        state.targetLevel = event.target.value;
+        renderResults();
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      const removeBtn = event.target.closest('[data-remove-month]');
+      if (removeBtn) {
+        state.months.splice(+removeBtn.dataset.removeMonth, 1);
+        syncControls();
+      }
+    });
+
+    document.getElementById('addMonthBtn').addEventListener('click', () => {
+      state.months.push({ name: `Mese ${state.months.length + 1}`, planned: { C: 0, B: 0, A: 0 }, actual: { C: 0, B: 0, A: 0 } });
+      syncControls();
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state = JSON.parse(JSON.stringify(defaultState));
+      syncControls();
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', exportCsv);
+
+    let currentTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    function paintTheme() {
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      themeToggle.textContent = currentTheme === 'dark' ? 'Tema chiaro' : 'Tema scuro';
+    }
+    themeToggle.addEventListener('click', () => { currentTheme = currentTheme === 'dark' ? 'light' : 'dark'; paintTheme(); });
+
+    paintTheme();
+    syncControls();
+  </script>
+</body>
+</html>
