@@ -7,65 +7,55 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0e0d;
-  --surface:#161513;
-  --surface2:#1c1a18;
-  --border:#272523;
-  --border2:#2e2c29;
-  --text:#e8e4db;
-  --muted:#6b6760;
-  --accent:#4f98a3;
-  --accent-dim:#1d3d42;
-  --pos:#4a9e5c;
-  --pos-bg:#0e2415;
-  --neg:#c05050;
-  --neg-bg:#2a0f0f;
-  --radius:10px;
-  --radius-sm:6px;
+  --bg:#0f0e0d;--surface:#161513;--surface2:#1c1a18;--border:#272523;--border2:#2e2c29;
+  --text:#e8e4db;--muted:#6b6760;--accent:#4f98a3;--pos:#4a9e5c;--pos-bg:#0e2415;
+  --neg:#c05050;--neg-bg:#2a0f0f;--warn:#c8923a;--warn-bg:#2a1d0a;
+  --radius:10px;--radius-sm:6px;
 }
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
 .app{max-width:1520px;margin:0 auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
 
-/* HEADER */
 .header{display:flex;justify-content:space-between;align-items:center;padding-bottom:4px}
-.header-left h1{font-size:17px;font-weight:600;letter-spacing:-0.3px}
+.header-left h1{font-size:17px;font-weight:600;letter-spacing:-.3px}
 .header-left p{color:var(--muted);font-size:11px;margin-top:1px}
-.header-right{display:flex;gap:8px}
+.header-right{display:flex;gap:8px;align-items:center}
 
-/* BUTTONS */
-.btn{padding:7px 13px;border-radius:var(--radius-sm);font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--border2);transition:background .15s,border-color .15s}
+.btn{padding:7px 13px;border-radius:var(--radius-sm);font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--border2);transition:background .15s}
 .btn-ghost{background:var(--surface2);color:var(--text)}
 .btn-ghost:hover{background:var(--border2)}
 .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
 .btn-accent:hover{background:#3d8390}
 .btn-danger{background:transparent;color:var(--muted);border-color:transparent;padding:4px 8px;font-size:11px}
 .btn-danger:hover{color:var(--neg);border-color:var(--neg)}
+.btn-sm{padding:5px 10px;font-size:11px}
 
-/* KPI BAR */
-.kpi-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.save-indicator{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.save-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+.save-dot.saved{background:var(--pos)}
+.save-dot.saving{background:var(--warn)}
+
+.kpi-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
 .kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
-.kpi-value{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.kpi-value{font-size:18px;font-weight:700;letter-spacing:-.5px}
 .kpi-value.pos{color:var(--pos)}
 .kpi-value.neg{color:var(--neg)}
+.kpi-value.warn{color:var(--warn)}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
 
-/* LAYOUT */
 .layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
-
-/* SIDEBAR */
 .sidebar{display:flex;flex-direction:column;gap:10px}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
-.panel-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 
-/* FORM ELEMENTS */
-label > span{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+label>span{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
 input,select{width:100%;height:34px;padding:0 10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius-sm);font:inherit;font-size:13px;outline:none;transition:border-color .15s}
 input:focus,select:focus{border-color:var(--accent)}
 .field-row{display:grid;gap:8px}
 .cols-3{grid-template-columns:repeat(3,1fr)}
 .cols-2{grid-template-columns:1fr 1fr}
 
-/* MONTHS */
 .months-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .month-scroller{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 340px);overflow-y:auto;padding-right:2px}
 .month-scroller::-webkit-scrollbar{width:3px}
@@ -81,11 +71,8 @@ input:focus,select:focus{border-color:var(--accent)}
 .row-label{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.5px}
 .col-label{font-size:10px;color:var(--muted);text-align:center}
 .grid-2rows input{height:30px;font-size:12px;text-align:center;padding:0 4px}
-.month-divider{border:none;border-top:1px solid var(--border);margin:2px 0}
 
-/* MAIN */
 .main-stack{display:flex;flex-direction:column;gap:10px}
-.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
@@ -94,32 +81,54 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;whit
 td:first-child{text-align:left;font-weight:500}
 tbody tr:hover{background:var(--surface2)}
 tbody tr:last-child td{border-bottom:none}
+tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:none}
 .badge{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700}
 .badge-pos{background:var(--pos-bg);color:var(--pos)}
 .badge-neg{background:var(--neg-bg);color:var(--neg)}
+.badge-warn{background:var(--warn-bg);color:var(--warn)}
 
-/* CONV PANEL */
 .result-box{height:34px;padding:0 10px;display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-weight:700;font-size:13px;color:var(--accent)}
 
-/* BUDGET TRACKER */
-.budget-panel .row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px}
-.budget-bar-wrap{margin-top:4px}
-.budget-bar-track{height:4px;background:var(--border2);border-radius:2px;overflow:hidden}
-.budget-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
-.budget-bar-fill.warn{background:#c8923a}
+/* BUDGET */
+.budget-bar-track{height:5px;background:var(--border2);border-radius:3px;overflow:hidden;margin:8px 0 4px}
+.budget-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .4s}
+.budget-bar-fill.warn{background:var(--warn)}
 .budget-bar-fill.over{background:var(--neg)}
-.budget-meta{display:flex;justify-content:space-between;margin-top:3px;font-size:10px;color:var(--muted)}
+.budget-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+
+/* CPI indicator */
+.cpi-pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.cpi-ok{background:var(--pos-bg);color:var(--pos)}
+.cpi-warn{background:var(--warn-bg);color:var(--warn)}
+.cpi-bad{background:var(--neg-bg);color:var(--neg)}
+
+/* FORECAST */
+.forecast-box{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px;margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.forecast-item .fl{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.forecast-item .fv{font-size:15px;font-weight:700}
+
+/* MODAL import */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;width:500px;max-width:90vw}
+.modal h3{font-size:14px;font-weight:600;margin-bottom:8px}
+.modal p{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.modal textarea{width:100%;height:160px;resize:vertical;padding:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius-sm);font:12px/1.5 monospace;outline:none}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.modal-error{font-size:11px;color:var(--neg);margin-top:6px;min-height:16px}
 
 /* LIGHT */
 .light body{background:#f0ede7;color:#1a1814}
-.light .panel,.light .kpi{background:#faf9f6;border-color:#dedad2}
-.light .surface2,.light input,.light select,.light .result-box,.light .month-card,.light .month-card-header input.month-name{background:#fff;border-color:#dedad2;color:#1a1814}
+.light .panel,.light .kpi,.light .modal{background:#faf9f6;border-color:#dedad2}
+.light input,.light select,.light .result-box,.light .month-card,.light .month-card-header input.month-name,.light .forecast-box,.light .modal textarea{background:#fff;border-color:#dedad2;color:#1a1814}
+.light .surface2{background:#fff}
 .light .btn-ghost{background:#eee9e0;border-color:#dedad2;color:#1a1814}
 .light .budget-bar-track{background:#dedad2}
 .light tbody tr:hover{background:#f3f0ea}
-.light th,th,.light td,td{border-color:#2a2927}
-.light th{border-color:#dedad2}
+.light th{border-color:#dedad2;color:#999}
 .light td{border-color:#dedad2}
+.light tfoot tr td{border-color:#dedad2}
+.light .modal-overlay{background:rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
@@ -132,19 +141,24 @@ tbody tr:last-child td{border-bottom:none}
       <p>Controllo giornate e costi per livello</p>
     </div>
     <div class="header-right">
-      <button class="btn btn-ghost" id="themeBtn">☀ Tema</button>
+      <div class="save-indicator"><div class="save-dot" id="saveDot"></div><span id="saveLabel">—</span></div>
+      <button class="btn btn-ghost btn-sm" id="importBtn">↑ Importa CSV</button>
+      <button class="btn btn-ghost btn-sm" id="exportBtn">↓ Esporta CSV</button>
+      <button class="btn btn-ghost btn-sm" id="clearStorageBtn">Cancella dati</button>
+      <button class="btn btn-ghost btn-sm" id="themeBtn">☀ Tema</button>
     </div>
   </div>
 
-  <!-- KPI BAR -->
+  <!-- KPI BAR: 6 colonne -->
   <div class="kpi-bar">
     <div class="kpi"><div class="kpi-label">Delta totale</div><div class="kpi-value" id="kpiDelta">—</div></div>
-    <div class="kpi"><div class="kpi-label">Carry-over totale</div><div class="kpi-value" id="kpiCarry">—</div></div>
+    <div class="kpi"><div class="kpi-label">Carry-over</div><div class="kpi-value" id="kpiCarry">—</div></div>
+    <div class="kpi"><div class="kpi-label">CPI medio</div><div class="kpi-value" id="kpiCpi">—</div><div class="kpi-sub" id="kpiCpiSub"></div></div>
+    <div class="kpi"><div class="kpi-label">EAC forecast</div><div class="kpi-value" id="kpiEac">—</div><div class="kpi-sub" id="kpiEacSub"></div></div>
     <div class="kpi"><div class="kpi-label">Mese migliore</div><div class="kpi-value" id="kpiBest">—</div></div>
     <div class="kpi"><div class="kpi-label">Mese peggiore</div><div class="kpi-value" id="kpiWorst">—</div></div>
   </div>
 
-  <!-- LAYOUT -->
   <div class="layout">
     <aside class="sidebar">
 
@@ -174,15 +188,15 @@ tbody tr:last-child td{border-bottom:none}
         </div>
       </div>
 
-      <!-- Budget di progetto -->
-      <div class="panel budget-panel">
-        <div class="panel-title">Budget totale progetto</div>
-        <div class="field-row cols-2" style="margin-bottom:10px">
-          <label><span>Budget (€)</span><input id="budgetTotal" type="number" step="100" value="0" placeholder="es. 150000"></label>
-          <label><span>Avanzamento %</span><div class="result-box" id="budgetPct">—</div></label>
+      <!-- Budget -->
+      <div class="panel">
+        <div class="panel-title">Budget progetto</div>
+        <div class="field-row cols-2">
+          <label><span>Budget totale (€)</span><input id="budgetTotal" type="number" step="100" value="0" placeholder="es. 150000"></label>
+          <label><span>Avanzamento</span><div class="result-box" id="budgetPct">—</div></label>
         </div>
         <div class="budget-bar-track"><div class="budget-bar-fill" id="budgetBar" style="width:0%"></div></div>
-        <div class="budget-meta"><span id="budgetSpent">Speso: — €</span><span id="budgetLeft">Residuo: — €</span></div>
+        <div class="budget-meta"><span id="budgetSpent">—</span><span id="budgetLeft">—</span></div>
       </div>
 
       <!-- Mesi -->
@@ -190,8 +204,8 @@ tbody tr:last-child td{border-bottom:none}
         <div class="months-header">
           <div class="panel-title" style="margin:0">Mesi</div>
           <div style="display:flex;gap:6px">
-            <button class="btn btn-accent" id="addMonthBtn">+ Aggiungi</button>
-            <button class="btn btn-ghost" id="resetBtn">Reset</button>
+            <button class="btn btn-accent btn-sm" id="addMonthBtn">+ Aggiungi</button>
+            <button class="btn btn-ghost btn-sm" id="resetBtn">Reset</button>
           </div>
         </div>
         <div class="month-scroller" id="monthsContainer"></div>
@@ -199,23 +213,21 @@ tbody tr:last-child td{border-bottom:none}
 
     </aside>
 
-    <!-- MAIN -->
     <main class="main-stack">
 
-      <!-- Tabella riepilogo -->
+      <!-- Riepilogo -->
       <div class="panel">
         <div class="panel-header">
           <div>
             <div class="panel-title" style="margin:0">Riepilogo mensile</div>
-            <div style="color:var(--muted);font-size:11px;margin-top:2px">Delta positivo = risparmio vs preventivo</div>
+            <div style="color:var(--muted);font-size:11px;margin-top:2px">Delta positivo = risparmio vs preventivo · CPI = preventivo/consuntivo (>1 bene)</div>
           </div>
         </div>
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Mese</th>
-              <th>Prev. (€)</th><th>Cons. (€)</th>
-              <th>Delta €</th><th>Carry-over</th>
+              <th>Mese</th><th>Prev. €</th><th>Cons. €</th>
+              <th>Delta €</th><th>CPI</th><th>Carry-over</th>
               <th>Δ A</th><th>Δ B</th><th>Δ C</th>
             </tr></thead>
             <tbody id="summaryBody"></tbody>
@@ -224,21 +236,28 @@ tbody tr:last-child td{border-bottom:none}
         </div>
       </div>
 
-      <!-- Tabella % burn per mese -->
+      <!-- Burn rate + Forecast -->
       <div class="panel">
         <div class="panel-header">
           <div>
-            <div class="panel-title" style="margin:0">Burn rate mensile</div>
-            <div style="color:var(--muted);font-size:11px;margin-top:2px">Consumo consuntivato rispetto al budget totale</div>
+            <div class="panel-title" style="margin:0">Burn rate & Forecast</div>
+            <div style="color:var(--muted);font-size:11px;margin-top:2px">Consumo progressivo e stima a completamento (EAC)</div>
           </div>
         </div>
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Mese</th><th>Consuntivo (€)</th><th>% su budget</th><th>Budget residuo dopo mese</th>
+              <th>Mese</th><th>Cons. mese €</th><th>Cons. cumulato €</th>
+              <th>% budget</th><th>Budget residuo</th>
+              <th>EAC proiettato</th>
             </tr></thead>
             <tbody id="burnBody"></tbody>
           </table>
+        </div>
+        <div class="forecast-box" id="forecastBox" style="display:none">
+          <div class="forecast-item"><div class="fl">Cons. medio/mese</div><div class="fv" id="fcAvg">—</div></div>
+          <div class="forecast-item"><div class="fl">EAC (trend attuale)</div><div class="fv" id="fcEac">—</div></div>
+          <div class="forecast-item"><div class="fl">Mesi rimanenti stimati</div><div class="fv" id="fcMonths">—</div></div>
         </div>
       </div>
 
@@ -246,58 +265,130 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<!-- MODAL IMPORT -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Importa dati da CSV</h3>
+    <p>Incolla il contenuto di un CSV esportato da questo tool (o formattato allo stesso modo). La prima riga è l'intestazione e viene ignorata.<br>
+    Formato atteso: <code>Mese,PrevA,PrevB,PrevC,ConsA,ConsB,ConsC</code></p>
+    <textarea id="importArea" placeholder="Mese,PrevA,PrevB,PrevC,ConsA,ConsB,ConsC&#10;Maggio,3,57,40,5,23,45&#10;Giugno,2,40,30,2,38,35"></textarea>
+    <div class="modal-error" id="importError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancel">Annulla</button>
+      <button class="btn btn-accent" id="modalConfirm">Importa</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
+  const STORAGE_KEY='cmp_data_v1';
   const costs={A:498.13,B:341.49,C:246.33};
   const fmt=n=>new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
   const fmtE=n=>fmt(n)+' €';
   const q=id=>document.getElementById(id);
 
-  // Theme
-  q('themeBtn').addEventListener('click',()=>document.documentElement.classList.toggle('light'));
+  /* ── SAVE INDICATOR ── */
+  let saveTimer=null;
+  function showSaving(){
+    q('saveDot').className='save-dot saving';
+    q('saveLabel').textContent='Salvataggio…';
+  }
+  function showSaved(){
+    q('saveDot').className='save-dot saved';
+    q('saveLabel').textContent='Salvato';
+  }
 
-  // Cost inputs
+  /* ── PERSIST ── */
+  function getState(){
+    const months=[];
+    document.querySelectorAll('.month-card').forEach(card=>{
+      const v={};
+      card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=parseFloat(i.value)||0);
+      months.push({name:card.querySelector('.month-name').value,...v});
+    });
+    return{
+      costA:q('costA').value, costB:q('costB').value, costC:q('costC').value,
+      convTarget:q('convTarget').value,
+      convValue:q('convValue').value, convFrom:q('convFrom').value, convTo:q('convTo').value,
+      budget:q('budgetTotal').value,
+      theme:document.documentElement.classList.contains('light')?'light':'dark',
+      months
+    };
+  }
+
+  function saveState(){
+    showSaving();
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>{
+      try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getState()));showSaved();}
+      catch(e){q('saveLabel').textContent='Errore salvataggio';}
+    },400);
+  }
+
+  function loadState(){
+    try{
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(!raw)return false;
+      const s=JSON.parse(raw);
+      q('costA').value=s.costA??498.13; costs.A=parseFloat(s.costA)||498.13;
+      q('costB').value=s.costB??341.49; costs.B=parseFloat(s.costB)||341.49;
+      q('costC').value=s.costC??246.33; costs.C=parseFloat(s.costC)||246.33;
+      setSelect('convTarget',s.convTarget);
+      q('convValue').value=s.convValue??26;
+      setSelect('convFrom',s.convFrom);
+      setSelect('convTo',s.convTo);
+      q('budgetTotal').value=s.budget??0;
+      if(s.theme==='light')document.documentElement.classList.add('light');
+      if(s.months&&s.months.length){
+        s.months.forEach(m=>addMonthCard(m.name,m.prevA,m.prevB,m.prevC,m.consA,m.consB,m.consC));
+      }
+      return true;
+    }catch(e){return false;}
+  }
+
+  function setSelect(id,val){
+    const el=q(id); if(!val)return;
+    [...el.options].forEach((o,i)=>{if(o.value===val)el.selectedIndex=i;});
+  }
+
+  /* ── THEME ── */
+  q('themeBtn').addEventListener('click',()=>{document.documentElement.classList.toggle('light');saveState();});
+
+  /* ── CLEAR ── */
+  q('clearStorageBtn').addEventListener('click',()=>{
+    if(!confirm('Cancellare tutti i dati salvati e tornare all\'esempio?'))return;
+    localStorage.removeItem(STORAGE_KEY);
+    q('monthsContainer').innerHTML='';
+    addMonthCard('Maggio',3,57,40,5,23,45);
+    updateAll();
+  });
+
+  /* ── COST INPUTS ── */
   ['A','B','C'].forEach(l=>{
     q('cost'+l).addEventListener('input',function(){
       costs[l]=parseFloat(this.value)||0;
-      updateConv();updateAll();
+      updateConv();updateAll();saveState();
     });
   });
 
-  // Conv target
-  q('convTarget').addEventListener('change',updateAll);
+  q('convTarget').addEventListener('change',()=>{updateAll();saveState();});
+  q('budgetTotal').addEventListener('input',()=>{updateAll();saveState();});
 
-  // Conversione rapida
+  /* ── CONV RAPIDA ── */
   function updateConv(){
     const v=parseFloat(q('convValue').value)||0;
-    const from=q('convFrom').value, to=q('convTo').value;
+    const from=q('convFrom').value,to=q('convTo').value;
     const ct=costs[to];
     q('convResult').textContent=ct?fmt(v*(costs[from]/ct))+' gg '+to:'—';
   }
   ['convValue','convFrom','convTo'].forEach(id=>{
-    q(id).addEventListener('input',updateConv);
-    q(id).addEventListener('change',updateConv);
+    q(id).addEventListener('input',()=>{updateConv();saveState();});
+    q(id).addEventListener('change',()=>{updateConv();saveState();});
   });
 
-  // Budget bar
-  q('budgetTotal').addEventListener('input',updateAll);
-
-  function updateBudgetBar(totalCons){
-    const budget=parseFloat(q('budgetTotal').value)||0;
-    if(!budget){q('budgetPct').textContent='—';q('budgetBar').style.width='0%';q('budgetSpent').textContent='Speso: —';q('budgetLeft').textContent='Residuo: —';return;}
-    const pct=Math.min((totalCons/budget)*100,100);
-    const bar=q('budgetBar');
-    bar.style.width=pct+'%';
-    bar.className='budget-bar-fill'+(pct>=100?' over':pct>=80?' warn':'');
-    q('budgetPct').textContent=pct.toFixed(1)+' %';
-    q('budgetSpent').textContent='Speso: '+fmtE(totalCons);
-    q('budgetLeft').textContent='Residuo: '+fmtE(Math.max(budget-totalCons,0));
-  }
-
-  // Months
-  let counter=0;
-  function makeCard(name,pA,pB,pC,cA,cB,cC){
-    counter++;
+  /* ── MONTHS ── */
+  function addMonthCard(name='Nuovo mese',pA=0,pB=0,pC=0,cA=0,cB=0,cC=0){
     const div=document.createElement('div');
     div.className='month-card';
     div.innerHTML=`
@@ -316,31 +407,33 @@ tbody tr:last-child td{border-bottom:none}
         <input class="mf" data-f="consB" type="number" value="${cB}">
         <input class="mf" data-f="consC" type="number" value="${cC}">
       </div>`;
-    div.querySelector('.rm-btn').addEventListener('click',()=>{div.remove();updateAll();});
-    div.querySelectorAll('input').forEach(i=>i.addEventListener('input',updateAll));
-    return div;
+    div.querySelector('.rm-btn').addEventListener('click',()=>{div.remove();updateAll();saveState();});
+    div.querySelectorAll('input').forEach(i=>i.addEventListener('input',()=>{updateAll();saveState();}));
+    q('monthsContainer').appendChild(div);
   }
 
-  function addMonth(name='Nuovo mese',pA=0,pB=0,pC=0,cA=0,cB=0,cC=0){
-    q('monthsContainer').appendChild(makeCard(name,pA,pB,pC,cA,cB,cC));
-    updateAll();
-  }
+  q('addMonthBtn').addEventListener('click',()=>{addMonthCard();updateAll();saveState();});
+  q('resetBtn').addEventListener('click',()=>{
+    if(!confirm('Resettare i mesi all\'esempio?'))return;
+    q('monthsContainer').innerHTML='';
+    addMonthCard('Maggio',3,57,40,5,23,45);
+    updateAll();saveState();
+  });
 
-  q('addMonthBtn').addEventListener('click',()=>addMonth());
-  q('resetBtn').addEventListener('click',()=>{q('monthsContainer').innerHTML='';addMonth('Maggio',3,57,40,5,23,45);});
-
+  /* ── UPDATE ALL ── */
   function updateAll(){
     updateConv();
     const target=q('convTarget').value;
-    const tbody=q('summaryBody'), burnBody=q('burnBody'), tfoot=q('summaryFoot');
-    tbody.innerHTML=''; burnBody.innerHTML=''; tfoot.innerHTML='';
+    const tbody=q('summaryBody'),burnBody=q('burnBody'),tfoot=q('summaryFoot');
+    tbody.innerHTML='';burnBody.innerHTML='';tfoot.innerHTML='';
 
     let totalDelta=0,totalCarry=0,totalPrev=0,totalCons=0;
     let bestDelta=-Infinity,worstDelta=Infinity,bestName='—',worstName='—';
-    let runningCons=0;
+    let runningCons=0,cpiSum=0,cpiCount=0;
     const budget=parseFloat(q('budgetTotal').value)||0;
+    const cards=[...document.querySelectorAll('.month-card')];
 
-    document.querySelectorAll('.month-card').forEach(card=>{
+    cards.forEach(card=>{
       const v={};
       card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=parseFloat(i.value)||0);
       const name=card.querySelector('.month-name').value||'—';
@@ -348,38 +441,55 @@ tbody tr:last-child td{border-bottom:none}
       const cons=v.consA*costs.A+v.consB*costs.B+v.consC*costs.C;
       const delta=prev-cons;
       const carry=((v.prevA-v.consA)*costs.A+(v.prevB-v.consB)*costs.B+(v.prevC-v.consC)*costs.C)/costs[target];
-      const dA=(v.prevA-v.consA).toFixed(2), dB=(v.prevB-v.consB).toFixed(2), dC=(v.prevC-v.consC).toFixed(2);
-      totalDelta+=delta; totalCarry+=carry; totalPrev+=prev; totalCons+=cons;
+      const cpi=cons>0?prev/cons:null;
+      const dA=(v.prevA-v.consA).toFixed(2),dB=(v.prevB-v.consB).toFixed(2),dC=(v.prevC-v.consC).toFixed(2);
+
+      totalDelta+=delta;totalCarry+=carry;totalPrev+=prev;totalCons+=cons;
       runningCons+=cons;
+      if(cpi!==null){cpiSum+=cpi;cpiCount++;}
       if(delta>bestDelta){bestDelta=delta;bestName=name;}
       if(delta<worstDelta){worstDelta=delta;worstName=name;}
 
       const isPos=delta>=0;
+      let cpiHtml='—';
+      if(cpi!==null){
+        const cls=cpi>=1?'cpi-ok':cpi>=0.85?'cpi-warn':'cpi-bad';
+        cpiHtml=`<span class="cpi-pill ${cls}">${cpi.toFixed(2)}</span>`;
+      }
+
       tbody.innerHTML+=`<tr>
         <td>${name}</td>
         <td>${fmtE(prev)}</td><td>${fmtE(cons)}</td>
         <td><span class="badge ${isPos?'badge-pos':'badge-neg'}">${isPos?'▲':'▼'}</span> ${fmtE(Math.abs(delta))}</td>
+        <td>${cpiHtml}</td>
         <td>${fmt(carry)} gg ${target}</td>
         <td>${dA}</td><td>${dB}</td><td>${dC}</td>
       </tr>`;
 
-      // Burn row
-      const pctBudget=budget?(runningCons/budget*100).toFixed(1):'—';
+      // EAC proiettato per riga: se ho budget e CPI, EAC = budget / CPI_cumulativo
+      const cpiCum=runningCons>0?totalPrev/runningCons:null;  // attuale progressivo
+      // ma per la riga usiamo il CPI puntuale
+      const eacRow=(budget&&cpi!==null)?fmtE(budget/cpi):'—';
+      const pctBudget=budget?(runningCons/budget*100).toFixed(1)+'%':'—';
       const residuo=budget?Math.max(budget-runningCons,0):null;
+
       burnBody.innerHTML+=`<tr>
         <td>${name}</td>
         <td>${fmtE(cons)}</td>
-        <td>${budget?pctBudget+' %':'—'}</td>
+        <td>${fmtE(runningCons)}</td>
+        <td>${pctBudget}</td>
         <td>${residuo!==null?fmtE(residuo):'—'}</td>
+        <td>${eacRow}</td>
       </tr>`;
     });
 
-    // Footer totali
+    // TOTALI
     const isTotPos=totalDelta>=0;
-    tfoot.innerHTML=`<tr style="font-weight:700;border-top:2px solid var(--border2)">
+    tfoot.innerHTML=`<tr>
       <td>Totale</td>
       <td>${fmtE(totalPrev)}</td><td>${fmtE(totalCons)}</td>
       <td><span class="badge ${isTotPos?'badge-pos':'badge-neg'}">${isTotPos?'▲':'▼'}</span> ${fmtE(Math.abs(totalDelta))}</td>
+      <td></td>
       <td>${fmt(totalCarry)} gg ${target}</td>
       <td colspan="3"></td>
     </tr>`;
@@ -390,12 +500,104 @@ tbody tr:last-child td{border-bottom:none}
     q('kpiCarry').textContent=fmt(totalCarry)+' gg '+target;
     q('kpiBest').textContent=bestName;
     q('kpiWorst').textContent=worstName;
-    updateBudgetBar(totalCons);
+
+    // CPI medio
+    const cpiAvg=cpiCount?cpiSum/cpiCount:null;
+    if(cpiAvg!==null){
+      q('kpiCpi').textContent=cpiAvg.toFixed(2);
+      q('kpiCpi').className='kpi-value '+(cpiAvg>=1?'pos':cpiAvg>=0.85?'warn':'neg');
+      q('kpiCpiSub').textContent=cpiAvg>=1?'In linea con il preventivo':cpiAvg>=0.85?'Leggero sforamento':'Sforamento significativo';
+    }else{
+      q('kpiCpi').textContent='—';q('kpiCpi').className='kpi-value';q('kpiCpiSub').textContent='';
+    }
+
+    // EAC globale = budget / CPI_cumulativo
+    const cpiGlobal=totalCons>0?totalPrev/totalCons:null;
+    if(budget&&cpiGlobal){
+      const eac=budget/cpiGlobal;
+      q('kpiEac').textContent=fmtE(eac);
+      q('kpiEac').className='kpi-value '+(eac<=budget?'pos':eac<=budget*1.1?'warn':'neg');
+      q('kpiEacSub').textContent=eac<=budget?'Sotto budget':'Sopra budget di '+fmtE(eac-budget);
+    }else{
+      q('kpiEac').textContent='—';q('kpiEac').className='kpi-value';q('kpiEacSub').textContent='Imposta un budget';
+    }
+
+    // Budget bar
+    if(budget){
+      const pct=Math.min(totalCons/budget*100,100);
+      const bar=q('budgetBar');
+      bar.style.width=pct+'%';
+      bar.className='budget-bar-fill'+(pct>=100?' over':pct>=80?' warn':'');
+      q('budgetPct').textContent=pct.toFixed(1)+' %';
+      q('budgetSpent').textContent='Speso: '+fmtE(totalCons);
+      q('budgetLeft').textContent='Residuo: '+fmtE(Math.max(budget-totalCons,0));
+    }else{
+      q('budgetBar').style.width='0%';q('budgetPct').textContent='—';
+      q('budgetSpent').textContent='—';q('budgetLeft').textContent='Imposta un budget';
+    }
+
+    // Forecast box
+    if(cards.length>0&&totalCons>0){
+      const avgCons=totalCons/cards.length;
+      const eacFc=budget&&cpiGlobal?budget/cpiGlobal:null;
+      const monthsLeft=eacFc?Math.max((eacFc-totalCons)/avgCons,0):null;
+      q('forecastBox').style.display='grid';
+      q('fcAvg').textContent=fmtE(avgCons);
+      q('fcEac').textContent=eacFc?fmtE(eacFc):'Imposta budget';
+      q('fcMonths').textContent=monthsLeft!==null?monthsLeft.toFixed(1):'—';
+    }else{
+      q('forecastBox').style.display='none';
+    }
   }
 
-  // Init
-  addMonth('Maggio',3,57,40,5,23,45);
-  updateConv();
+  /* ── EXPORT CSV ── */
+  q('exportBtn').addEventListener('click',()=>{
+    const rows=[['Mese','PrevA','PrevB','PrevC','ConsA','ConsB','ConsC']];
+    document.querySelectorAll('.month-card').forEach(card=>{
+      const v={};card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=i.value);
+      rows.push([card.querySelector('.month-name').value,v.prevA,v.prevB,v.prevC,v.consA,v.consB,v.consC]);
+    });
+    const csv=rows.map(r=>r.join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+    a.download='cost_model_planner_'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+  });
+
+  /* ── IMPORT CSV ── */
+  q('importBtn').addEventListener('click',()=>q('modalOverlay').classList.add('open'));
+  q('modalCancel').addEventListener('click',()=>q('modalOverlay').classList.remove('open'));
+  q('modalOverlay').addEventListener('click',e=>{if(e.target===q('modalOverlay'))q('modalOverlay').classList.remove('open');});
+
+  q('modalConfirm').addEventListener('click',()=>{
+    const raw=q('importArea').value.trim();
+    const errEl=q('importError');
+    errEl.textContent='';
+    if(!raw){errEl.textContent='Incolla del testo prima di importare.';return;}
+    const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
+    // Skip header if first line non-numeric in col 1
+    const dataLines=lines[0].toLowerCase().startsWith('mese')||isNaN(parseFloat(lines[0].split(',')[1]))?lines.slice(1):lines;
+    if(!dataLines.length){errEl.textContent='Nessun dato trovato dopo l\'intestazione.';return;}
+    const parsed=[];
+    for(let i=0;i<dataLines.length;i++){
+      const cols=dataLines[i].split(',');
+      if(cols.length<7){errEl.textContent=`Riga ${i+2}: attese 7 colonne, trovate ${cols.length}.`;return;}
+      const nums=cols.slice(1,7).map(Number);
+      if(nums.some(isNaN)){errEl.textContent=`Riga ${i+2}: valori non numerici rilevati.`;return;}
+      parsed.push({name:cols[0].trim(),pA:nums[0],pB:nums[1],pC:nums[2],cA:nums[3],cB:nums[4],cC:nums[5]});
+    }
+    q('monthsContainer').innerHTML='';
+    parsed.forEach(m=>addMonthCard(m.name,m.pA,m.pB,m.pC,m.cA,m.cB,m.cC));
+    updateAll();saveState();
+    q('modalOverlay').classList.remove('open');
+    q('importArea').value='';
+  });
+
+  /* ── INIT ── */
+  const restored=loadState();
+  if(!restored)addMonthCard('Maggio',3,57,40,5,23,45);
+  updateAll();
+  if(restored)showSaved(); else{q('saveDot').className='save-dot';q('saveLabel').textContent='Nessun dato salvato';}
 })();
 </script>
 </body>
