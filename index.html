@@ -165,14 +165,23 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
       <!-- Costi -->
       <div class="panel">
         <div class="panel-title">Costi giornalieri</div>
-        <div class="field-row cols-3">
+        <div class="field-row cols-3" style="margin-bottom:8px">
           <label><span>Livello A</span><input id="costA" type="number" step="0.01" value="498.13"></label>
           <label><span>Livello B</span><input id="costB" type="number" step="0.01" value="341.49"></label>
           <label><span>Livello C</span><input id="costC" type="number" step="0.01" value="246.33"></label>
+          <label><span>Livello D</span><input id="costD" type="number" step="0.01" value="791.66"></label>
+          <label><span>Esternalizzati</span><input id="costEst" type="number" step="0.01" value="325"></label>
+          <label><span>Interni</span><input id="costInt" type="number" step="0.01" value="217.02"></label>
         </div>
-        <div style="margin-top:10px">
+        <div class="field-row" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <label><span>Distaccati</span><input id="costDistaccati" type="number" step="0.01" value="350"></label>
+        </div>
+        <div>
           <label><span>Livello target carry-over</span>
-            <select id="convTarget"><option>A</option><option>B</option><option selected>C</option></select>
+            <select id="convTarget">
+              <option>A</option><option>B</option><option selected>C</option>
+              <option>D</option><option>Est</option><option>Int</option><option>Distaccati</option>
+            </select>
           </label>
         </div>
       </div>
@@ -182,8 +191,8 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         <div class="panel-title">Conversione rapida</div>
         <div class="field-row" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
           <label><span>Giorni</span><input id="convValue" type="number" step="0.01" value="26"></label>
-          <label><span>Da</span><select id="convFrom"><option>A</option><option selected>B</option><option>C</option></select></label>
-          <label><span>A</span><select id="convTo"><option>A</option><option>B</option><option selected>C</option></select></label>
+          <label><span>Da</span><select id="convFrom"><option>A</option><option selected>B</option><option>C</option><option>D</option><option>Est</option><option>Int</option><option>Distaccati</option></select></label>
+          <label><span>A</span><select id="convTo"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>Est</option><option>Int</option><option>Distaccati</option></select></label>
           <label><span>Risultato</span><div class="result-box" id="convResult">—</div></label>
         </div>
       </div>
@@ -270,7 +279,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
   <div class="modal">
     <h3>Importa dati da CSV</h3>
     <p>Incolla il contenuto di un CSV esportato da questo tool (o formattato allo stesso modo). La prima riga è l'intestazione e viene ignorata.<br>
-    Formato atteso: <code>Mese,PrevA,PrevB,PrevC,ConsA,ConsB,ConsC</code></p>
+    Formato completo: <code>Mese,PrevA,PrevB,PrevC,PrevD,PrevEst,PrevInt,PrevDistaccati,ConsA,ConsB,ConsC,ConsD,ConsEst,ConsInt,ConsDistaccati</code><br>Sono supportati anche CSV con sole 7 colonne (formato precedente).</p>
     <textarea id="importArea" placeholder="Mese,PrevA,PrevB,PrevC,ConsA,ConsB,ConsC&#10;Maggio,3,57,40,5,23,45&#10;Giugno,2,40,30,2,38,35"></textarea>
     <div class="modal-error" id="importError"></div>
     <div class="modal-actions">
@@ -283,7 +292,9 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
 <script>
 (function(){
   const STORAGE_KEY='cmp_data_v1';
-  const costs={A:498.13,B:341.49,C:246.33};
+  const costs={A:498.13,B:341.49,C:246.33,D:791.66,Est:325,Int:217.02,Distaccati:350};
+  const ALL_LEVELS=["A","B","C","D","Est","Int","Distaccati"];
+  const EXTRA_LEVELS=["D","Est","Int","Distaccati"];
   const fmt=n=>new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
   const fmtE=n=>fmt(n)+' €';
   const q=id=>document.getElementById(id);
@@ -309,6 +320,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
     });
     return{
       costA:q('costA').value, costB:q('costB').value, costC:q('costC').value,
+      costD:q('costD').value, costEst:q('costEst').value, costInt:q('costInt').value, costDistaccati:q('costDistaccati').value,
       convTarget:q('convTarget').value,
       convValue:q('convValue').value, convFrom:q('convFrom').value, convTo:q('convTo').value,
       budget:q('budgetTotal').value,
@@ -334,6 +346,10 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
       q('costA').value=s.costA??498.13; costs.A=parseFloat(s.costA)||498.13;
       q('costB').value=s.costB??341.49; costs.B=parseFloat(s.costB)||341.49;
       q('costC').value=s.costC??246.33; costs.C=parseFloat(s.costC)||246.33;
+      q('costD').value=s.costD??791.66; costs.D=parseFloat(s.costD)||791.66;
+      q('costEst').value=s.costEst??325; costs.Est=parseFloat(s.costEst)||325;
+      q('costInt').value=s.costInt??217.02; costs.Int=parseFloat(s.costInt)||217.02;
+      q('costDistaccati').value=s.costDistaccati??350; costs.Distaccati=parseFloat(s.costDistaccati)||350;
       setSelect('convTarget',s.convTarget);
       q('convValue').value=s.convValue??26;
       setSelect('convFrom',s.convFrom);
@@ -341,7 +357,11 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
       q('budgetTotal').value=s.budget??0;
       if(s.theme==='light')document.documentElement.classList.add('light');
       if(s.months&&s.months.length){
-        s.months.forEach(m=>addMonthCard(m.name,m.prevA,m.prevB,m.prevC,m.consA,m.consB,m.consC));
+        s.months.forEach(m=>{
+          const extra={};
+          EXTRA_LEVELS.forEach(l=>{extra['prev'+l]=m['prev'+l]||0;extra['cons'+l]=m['cons'+l]||0;});
+          addMonthCard(m.name,m.prevA||0,m.prevB||0,m.prevC||0,m.consA||0,m.consB||0,m.consC||0,extra);
+        });
       }
       return true;
     }catch(e){return false;}
@@ -360,12 +380,12 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
     if(!confirm('Cancellare tutti i dati salvati e tornare all\'esempio?'))return;
     localStorage.removeItem(STORAGE_KEY);
     q('monthsContainer').innerHTML='';
-    addMonthCard('Maggio',3,57,40,5,23,45);
+    addMonthCard('Maggio',3,57,40,5,23,45,{});
     updateAll();
   });
 
   /* ── COST INPUTS ── */
-  ['A','B','C'].forEach(l=>{
+  ALL_LEVELS.forEach(l=>{
     q('cost'+l).addEventListener('input',function(){
       costs[l]=parseFloat(this.value)||0;
       updateConv();updateAll();saveState();
@@ -388,15 +408,14 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
   });
 
   /* ── MONTHS ── */
-  function addMonthCard(name='Nuovo mese',pA=0,pB=0,pC=0,cA=0,cB=0,cC=0){
+  // extraVals: {prevD,consD,prevEst,consEst,prevInt,consInt,prevDistaccati,consDistaccati}
+  function addMonthCard(name='Nuovo mese',pA=0,pB=0,pC=0,cA=0,cB=0,cC=0,extraVals={}){
     const div=document.createElement('div');
     div.className='month-card';
-    div.innerHTML=`
-      <div class="month-card-header">
-        <input class="month-name" value="${name}">
-        <button class="btn btn-danger rm-btn">Rimuovi</button>
-      </div>
-      <div class="grid-2rows">
+
+    // Build fixed 3-level grid (A B C always visible)
+    const baseGrid=`
+      <div class="grid-2rows" style="grid-template-columns:52px 1fr 1fr 1fr">
         <div></div><div class="col-label">A</div><div class="col-label">B</div><div class="col-label">C</div>
         <div class="row-label">PREV</div>
         <input class="mf" data-f="prevA" type="number" value="${pA}">
@@ -407,8 +426,42 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         <input class="mf" data-f="consB" type="number" value="${cB}">
         <input class="mf" data-f="consC" type="number" value="${cC}">
       </div>`;
+
+    // Detect which extra levels have data saved
+    const hasExtra=EXTRA_LEVELS.some(l=>(extraVals['prev'+l]||0)+(extraVals['cons'+l]||0)>0);
+
+    div.innerHTML=`
+      <div class="month-card-header">
+        <input class="month-name" value="${name}">
+        <button class="btn btn-ghost btn-sm extra-toggle-btn">${hasExtra?'▲ Nascondi livelli extra':'＋ Livelli extra'}</button>
+        <button class="btn btn-danger rm-btn">Rimuovi</button>
+      </div>
+      ${baseGrid}
+      <div class="extra-levels" style="display:${hasExtra?'flex':'none'};flex-direction:column;gap:5px;border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
+        <div style="display:grid;grid-template-columns:72px 1fr 1fr;gap:5px;margin-bottom:1px">
+          <div></div>
+          <div class="col-label" style="text-align:center;font-size:9px">Preventivo</div>
+          <div class="col-label" style="text-align:center;font-size:9px">Consuntivo</div>
+        </div>
+        ${EXTRA_LEVELS.map(l=>`
+        <div style="display:grid;grid-template-columns:72px 1fr 1fr;gap:5px;align-items:center">
+          <div class="row-label" style="font-size:9px">${l}</div>
+          <input class="mf" data-f="prev${l}" type="number" value="${extraVals['prev'+l]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
+          <input class="mf" data-f="cons${l}" type="number" value="${extraVals['cons'+l]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
+        </div>`).join('')}
+      </div>`;
+
+    // Toggle extra levels
+    const extraDiv=div.querySelector('.extra-levels');
+    div.querySelector('.extra-toggle-btn').addEventListener('click',function(){
+      const visible=extraDiv.style.display!=='none';
+      extraDiv.style.display=visible?'none':'flex';
+      this.textContent=visible?'＋ Livelli extra':'▲ Nascondi livelli extra';
+    });
+
     div.querySelector('.rm-btn').addEventListener('click',()=>{div.remove();updateAll();saveState();});
-    div.querySelectorAll('input').forEach(i=>i.addEventListener('input',()=>{updateAll();saveState();}));
+    div.querySelectorAll('input.mf').forEach(i=>i.addEventListener('input',()=>{updateAll();saveState();}));
+    div.querySelector('.month-name').addEventListener('input',()=>{updateAll();saveState();});
     q('monthsContainer').appendChild(div);
   }
 
@@ -416,7 +469,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
   q('resetBtn').addEventListener('click',()=>{
     if(!confirm('Resettare i mesi all\'esempio?'))return;
     q('monthsContainer').innerHTML='';
-    addMonthCard('Maggio',3,57,40,5,23,45);
+    addMonthCard('Maggio',3,57,40,5,23,45,{});
     updateAll();saveState();
   });
 
@@ -437,12 +490,14 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
       const v={};
       card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=parseFloat(i.value)||0);
       const name=card.querySelector('.month-name').value||'—';
-      const prev=v.prevA*costs.A+v.prevB*costs.B+v.prevC*costs.C;
-      const cons=v.consA*costs.A+v.consB*costs.B+v.consC*costs.C;
+      const prev=ALL_LEVELS.reduce((s,l)=>s+(v['prev'+l]||0)*costs[l],0);
+      const cons=ALL_LEVELS.reduce((s,l)=>s+(v['cons'+l]||0)*costs[l],0);
       const delta=prev-cons;
-      const carry=((v.prevA-v.consA)*costs.A+(v.prevB-v.consB)*costs.B+(v.prevC-v.consC)*costs.C)/costs[target];
+      const carry=ALL_LEVELS.reduce((s,l)=>s+((v['prev'+l]||0)-(v['cons'+l]||0))*costs[l],0)/costs[target];
       const cpi=cons>0?prev/cons:null;
       const dA=(v.prevA-v.consA).toFixed(2),dB=(v.prevB-v.consB).toFixed(2),dC=(v.prevC-v.consC).toFixed(2);
+      const hasExtra=EXTRA_LEVELS.some(l=>(v['prev'+l]||0)+(v['cons'+l]||0)>0);
+      const extraDeltaCells=hasExtra?EXTRA_LEVELS.map(l=>{const d=((v['prev'+l]||0)-(v['cons'+l]||0));return`<td>${d.toFixed(2)}</td>`;}).join(''):'';
 
       totalDelta+=delta;totalCarry+=carry;totalPrev+=prev;totalCons+=cons;
       runningCons+=cons;
@@ -463,7 +518,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         <td><span class="badge ${isPos?'badge-pos':'badge-neg'}">${isPos?'▲':'▼'}</span> ${fmtE(Math.abs(delta))}</td>
         <td>${cpiHtml}</td>
         <td>${fmt(carry)} gg ${target}</td>
-        <td>${dA}</td><td>${dB}</td><td>${dC}</td>
+        <td>${dA}</td><td>${dB}</td><td>${dC}</td>${extraDeltaCells}
       </tr>`;
 
       // EAC proiettato per riga: se ho budget e CPI, EAC = budget / CPI_cumulativo
@@ -552,10 +607,11 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
 
   /* ── EXPORT CSV ── */
   q('exportBtn').addEventListener('click',()=>{
-    const rows=[['Mese','PrevA','PrevB','PrevC','ConsA','ConsB','ConsC']];
+    const hdrs=['Mese',...ALL_LEVELS.map(l=>'Prev'+l),...ALL_LEVELS.map(l=>'Cons'+l)];
+    const rows=[hdrs];
     document.querySelectorAll('.month-card').forEach(card=>{
-      const v={};card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=i.value);
-      rows.push([card.querySelector('.month-name').value,v.prevA,v.prevB,v.prevC,v.consA,v.consB,v.consC]);
+      const v={};card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=i.value||0);
+      rows.push([card.querySelector('.month-name').value,...ALL_LEVELS.map(l=>v['prev'+l]||0),...ALL_LEVELS.map(l=>v['cons'+l]||0)]);
     });
     const csv=rows.map(r=>r.join(',')).join('\n');
     const a=document.createElement('a');
@@ -581,13 +637,18 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
     const parsed=[];
     for(let i=0;i<dataLines.length;i++){
       const cols=dataLines[i].split(',');
-      if(cols.length<7){errEl.textContent=`Riga ${i+2}: attese 7 colonne, trovate ${cols.length}.`;return;}
-      const nums=cols.slice(1,7).map(Number);
-      if(nums.some(isNaN)){errEl.textContent=`Riga ${i+2}: valori non numerici rilevati.`;return;}
-      parsed.push({name:cols[0].trim(),pA:nums[0],pB:nums[1],pC:nums[2],cA:nums[3],cB:nums[4],cC:nums[5]});
+      if(cols.length<7){errEl.textContent=`Riga ${i+2}: attese almeno 7 colonne, trovate ${cols.length}.`;return;}
+      const nums=cols.slice(1).map(Number);
+      if(nums.slice(0,6).some(isNaN)){errEl.textContent=`Riga ${i+2}: valori non numerici rilevati.`;return;}
+      const extra={};
+      // New format: 14 numeric cols (7 prev + 7 cons for all levels)
+      if(nums.length>=14){
+        EXTRA_LEVELS.forEach((l,idx)=>{extra['prev'+l]=nums[3+idx]||0;extra['cons'+l]=nums[10+idx]||0;});
+      }
+      parsed.push({name:cols[0].trim(),pA:nums[0],pB:nums[1],pC:nums[2],cA:nums[7]||nums[3],cB:nums[8]||nums[4],cC:nums[9]||nums[5],extra});
     }
     q('monthsContainer').innerHTML='';
-    parsed.forEach(m=>addMonthCard(m.name,m.pA,m.pB,m.pC,m.cA,m.cB,m.cC));
+    parsed.forEach(m=>addMonthCard(m.name,m.pA,m.pB,m.pC,m.cA,m.cB,m.cC,m.extra||{}));
     updateAll();saveState();
     q('modalOverlay').classList.remove('open');
     q('importArea').value='';
@@ -595,7 +656,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
 
   /* ── INIT ── */
   const restored=loadState();
-  if(!restored)addMonthCard('Maggio',3,57,40,5,23,45);
+  if(!restored)addMonthCard('Maggio',3,57,40,5,23,45,{});
   updateAll();
   if(restored)showSaved(); else{q('saveDot').className='save-dot';q('saveLabel').textContent='Nessun dato salvato';}
 })();
