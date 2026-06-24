@@ -491,13 +491,18 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
       card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=parseFloat(i.value)||0);
       const name=card.querySelector('.month-name').value||'—';
       const prev=ALL_LEVELS.reduce((s,l)=>s+(v['prev'+l]||0)*costs[l],0);
-      const cons=ALL_LEVELS.reduce((s,l)=>s+(v['cons'+l]||0)*costs[l],0);
+      const consRaw=ALL_LEVELS.reduce((s,l)=>s+(v['cons'+l]||0)*costs[l],0);
+      // Se tutti i cons sono 0, il mese non è ancora consuntivato: usa prev come cons
+      // così delta=0, carry=0, CPI=1 — nessun falso positivo
+      const notYetCons=ALL_LEVELS.every(l=>(v['cons'+l]||0)===0);
+      const eff=l=>notYetCons?(v['prev'+l]||0):(v['cons'+l]||0); // effective cons value per level
+      const cons=notYetCons?prev:consRaw;
       const delta=prev-cons;
-      const carry=ALL_LEVELS.reduce((s,l)=>s+((v['prev'+l]||0)-(v['cons'+l]||0))*costs[l],0)/costs[target];
+      const carry=ALL_LEVELS.reduce((s,l)=>s+((v['prev'+l]||0)-eff(l))*costs[l],0)/costs[target];
       const cpi=cons>0?prev/cons:null;
-      const dA=(v.prevA-v.consA).toFixed(2),dB=(v.prevB-v.consB).toFixed(2),dC=(v.prevC-v.consC).toFixed(2);
+      const dA=(v.prevA-eff('A')).toFixed(2),dB=(v.prevB-eff('B')).toFixed(2),dC=(v.prevC-eff('C')).toFixed(2);
       const hasExtra=EXTRA_LEVELS.some(l=>(v['prev'+l]||0)+(v['cons'+l]||0)>0);
-      const extraDeltaCells=hasExtra?EXTRA_LEVELS.map(l=>{const d=((v['prev'+l]||0)-(v['cons'+l]||0));return`<td>${d.toFixed(2)}</td>`;}).join(''):'';
+      const extraDeltaCells=hasExtra?EXTRA_LEVELS.map(l=>{const d=((v['prev'+l]||0)-eff(l));return`<td>${d.toFixed(2)}</td>`;}).join(''):'';
 
       totalDelta+=delta;totalCarry+=carry;totalPrev+=prev;totalCons+=cons;
       runningCons+=cons;
@@ -511,13 +516,16 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         const cls=cpi>=1?'cpi-ok':cpi>=0.85?'cpi-warn':'cpi-bad';
         cpiHtml=`<span class="cpi-pill ${cls}">${cpi.toFixed(2)}</span>`;
       }
+      const pendingBadge=notYetCons?` <span style="font-size:9px;color:var(--muted);font-weight:400">(prev.)</span>`:'';
+      const dash='<span style="color:var(--muted)">—</span>';
 
       tbody.innerHTML+=`<tr>
         <td>${name}</td>
-        <td>${fmtE(prev)}</td><td>${fmtE(cons)}</td>
-        <td><span class="badge ${isPos?'badge-pos':'badge-neg'}">${isPos?'▲':'▼'}</span> ${fmtE(Math.abs(delta))}</td>
-        <td>${cpiHtml}</td>
-        <td>${fmt(carry)} gg ${target}</td>
+        <td>${fmtE(prev)}</td>
+        <td>${fmtE(cons)}${pendingBadge}</td>
+        <td>${notYetCons?dash:`<span class="badge ${isPos?'badge-pos':'badge-neg'}">${isPos?'▲':'▼'}</span> ${fmtE(Math.abs(delta))}`}</td>
+        <td>${notYetCons?dash:cpiHtml}</td>
+        <td>${notYetCons?dash:fmt(carry)+' gg '+target}</td>
         <td>${dA}</td><td>${dB}</td><td>${dC}</td>${extraDeltaCells}
       </tr>`;
 
