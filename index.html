@@ -1,134 +1,402 @@
 <!doctype html>
 <html lang="it">
 <head>
-    <meta charset="utf-8">
-    <title>Cost Model Planner v9</title>
-    <style>
-        body { font-family: sans-serif; background: #0f0e0d; color: #ece9e1; padding: 20px; }
-        .app { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        
-        /* KPI BAR */
-        .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-        .kpi { background: #1a1917; padding: 15px; border-radius: 12px; border: 1px solid #2e2d2b; }
-        .kpi .helper { font-size: 11px; color: #888; margin-bottom: 5px; }
-        .kpi h2 { font-size: 18px; margin: 0; }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cost Model Planner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0e0d;
+  --surface:#161513;
+  --surface2:#1c1a18;
+  --border:#272523;
+  --border2:#2e2c29;
+  --text:#e8e4db;
+  --muted:#6b6760;
+  --accent:#4f98a3;
+  --accent-dim:#1d3d42;
+  --pos:#4a9e5c;
+  --pos-bg:#0e2415;
+  --neg:#c05050;
+  --neg-bg:#2a0f0f;
+  --radius:10px;
+  --radius-sm:6px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+.app{max-width:1520px;margin:0 auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
 
-        .layout { display: grid; grid-template-columns: 400px 1fr; gap: 20px; }
-        .panel { background: #1a1917; padding: 20px; border-radius: 12px; border: 1px solid #2e2d2b; }
-        
-        /* Mesi */
-        .month-card { background: #141312; padding: 15px; border-radius: 10px; border: 1px solid #2e2d2b; margin-bottom: 15px; }
-        .month-name { width: 100%; margin-bottom: 10px; font-weight: bold; background: transparent; border: none; color: #fff; font-size: 16px; }
-        .grid-header, .grid-row { display: grid; grid-template-columns: 60px repeat(3, 1fr); gap: 5px; align-items: center; }
-        .label-row { font-size: 11px; font-weight: bold; color: #4f98a3; }
-        .label-col { font-size: 10px; color: #888; text-align: center; }
-        
-        input, select { width: 100%; padding: 6px; background: #1a1917; color: #fff; border: 1px solid #2e2d2b; border-radius: 4px; font-size: 13px; }
-        .btn-cta { background: #4f98a3; color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; width: 100%; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { padding: 12px; border-bottom: 1px solid #2e2d2b; text-align: right; }
-    </style>
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:center;padding-bottom:4px}
+.header-left h1{font-size:17px;font-weight:600;letter-spacing:-0.3px}
+.header-left p{color:var(--muted);font-size:11px;margin-top:1px}
+.header-right{display:flex;gap:8px}
+
+/* BUTTONS */
+.btn{padding:7px 13px;border-radius:var(--radius-sm);font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--border2);transition:background .15s,border-color .15s}
+.btn-ghost{background:var(--surface2);color:var(--text)}
+.btn-ghost:hover{background:var(--border2)}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.btn-accent:hover{background:#3d8390}
+.btn-danger{background:transparent;color:var(--muted);border-color:transparent;padding:4px 8px;font-size:11px}
+.btn-danger:hover{color:var(--neg);border-color:var(--neg)}
+
+/* KPI BAR */
+.kpi-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.kpi-value{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.kpi-value.pos{color:var(--pos)}
+.kpi-value.neg{color:var(--neg)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
+
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:10px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.panel-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px}
+
+/* FORM ELEMENTS */
+label > span{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+input,select{width:100%;height:34px;padding:0 10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius-sm);font:inherit;font-size:13px;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--accent)}
+.field-row{display:grid;gap:8px}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+.cols-2{grid-template-columns:1fr 1fr}
+
+/* MONTHS */
+.months-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.month-scroller{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 340px);overflow-y:auto;padding-right:2px}
+.month-scroller::-webkit-scrollbar{width:3px}
+.month-scroller::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.month-card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:10px}
+.month-card-header{display:flex;align-items:center;gap:8px}
+.month-card-header input.month-name{flex:1;font-weight:600;font-size:13px;background:transparent;border-color:transparent}
+.month-card-header input.month-name:hover{border-color:var(--border2)}
+.month-card-header input.month-name:focus{background:var(--surface2);border-color:var(--accent)}
+
+.grid-2rows{display:grid;grid-template-columns:52px 1fr 1fr 1fr;gap:5px;align-items:center}
+.row-label{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.col-label{font-size:10px;color:var(--muted);text-align:center}
+.grid-2rows input{height:30px;font-size:12px;text-align:center;padding:0 4px}
+.month-divider{border:none;border-top:1px solid var(--border);margin:2px 0}
+
+/* MAIN */
+.main-stack{display:flex;flex-direction:column;gap:10px}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+th:first-child{text-align:left}
+td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+td:first-child{text-align:left;font-weight:500}
+tbody tr:hover{background:var(--surface2)}
+tbody tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700}
+.badge-pos{background:var(--pos-bg);color:var(--pos)}
+.badge-neg{background:var(--neg-bg);color:var(--neg)}
+
+/* CONV PANEL */
+.result-box{height:34px;padding:0 10px;display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-weight:700;font-size:13px;color:var(--accent)}
+
+/* BUDGET TRACKER */
+.budget-panel .row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px}
+.budget-bar-wrap{margin-top:4px}
+.budget-bar-track{height:4px;background:var(--border2);border-radius:2px;overflow:hidden}
+.budget-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+.budget-bar-fill.warn{background:#c8923a}
+.budget-bar-fill.over{background:var(--neg)}
+.budget-meta{display:flex;justify-content:space-between;margin-top:3px;font-size:10px;color:var(--muted)}
+
+/* LIGHT */
+.light body{background:#f0ede7;color:#1a1814}
+.light .panel,.light .kpi{background:#faf9f6;border-color:#dedad2}
+.light .surface2,.light input,.light select,.light .result-box,.light .month-card,.light .month-card-header input.month-name{background:#fff;border-color:#dedad2;color:#1a1814}
+.light .btn-ghost{background:#eee9e0;border-color:#dedad2;color:#1a1814}
+.light .budget-bar-track{background:#dedad2}
+.light tbody tr:hover{background:#f3f0ea}
+.light th,th,.light td,td{border-color:#2a2927}
+.light th{border-color:#dedad2}
+.light td{border-color:#dedad2}
+</style>
 </head>
 <body>
-    <div class="app">
-        <div class="kpi-bar">
-            <div class="kpi"><div class="helper">Delta totale</div><h2 id="kpiDelta">—</h2></div>
-            <div class="kpi"><div class="helper">Carry-over totale</div><h2 id="kpiCarry">—</h2></div>
-            <div class="kpi"><div class="helper">Mese migliore</div><h2 id="kpiBest">—</h2></div>
-            <div class="kpi"><div class="helper">Mese peggiore</div><h2 id="kpiWorst">—</h2></div>
-        </div>
+<div class="app">
 
-        <div class="layout">
-            <aside>
-                <div class="panel">
-                    <strong>Configurazione Costi</strong>
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 10px 0;">
-                        <input id="costA" type="number" value="498.13" title="Costo A">
-                        <input id="costB" type="number" value="341.49" title="Costo B">
-                        <input id="costC" type="number" value="246.33" title="Costo C">
-                    </div>
-                    <div style="font-size:12px; color:#888; margin-bottom:5px;">Target conversione:</div>
-                    <select id="convTarget"><option>A</option><option>B</option><option selected>C</option></select>
-                </div>
-                <button class="btn-cta" id="addMonthBtn" style="margin-top:15px;">+ Aggiungi Mese</button>
-                <div id="monthsContainer" style="margin-top:15px;"></div>
-            </aside>
-
-            <main class="panel">
-                <strong>Riepilogo Dettagliato</strong>
-                <table>
-                    <thead><tr><th>Mese</th><th>Delta €</th><th>Carry-over</th></tr></thead>
-                    <tbody id="summaryBody"></tbody>
-                </table>
-            </main>
-        </div>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Cost Model Planner</h1>
+      <p>Controllo giornate e costi per livello</p>
     </div>
+    <div class="header-right">
+      <button class="btn btn-ghost" id="themeBtn">☀ Tema</button>
+    </div>
+  </div>
+
+  <!-- KPI BAR -->
+  <div class="kpi-bar">
+    <div class="kpi"><div class="kpi-label">Delta totale</div><div class="kpi-value" id="kpiDelta">—</div></div>
+    <div class="kpi"><div class="kpi-label">Carry-over totale</div><div class="kpi-value" id="kpiCarry">—</div></div>
+    <div class="kpi"><div class="kpi-label">Mese migliore</div><div class="kpi-value" id="kpiBest">—</div></div>
+    <div class="kpi"><div class="kpi-label">Mese peggiore</div><div class="kpi-value" id="kpiWorst">—</div></div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <aside class="sidebar">
+
+      <!-- Costi -->
+      <div class="panel">
+        <div class="panel-title">Costi giornalieri</div>
+        <div class="field-row cols-3">
+          <label><span>Livello A</span><input id="costA" type="number" step="0.01" value="498.13"></label>
+          <label><span>Livello B</span><input id="costB" type="number" step="0.01" value="341.49"></label>
+          <label><span>Livello C</span><input id="costC" type="number" step="0.01" value="246.33"></label>
+        </div>
+        <div style="margin-top:10px">
+          <label><span>Livello target carry-over</span>
+            <select id="convTarget"><option>A</option><option>B</option><option selected>C</option></select>
+          </label>
+        </div>
+      </div>
+
+      <!-- Conversione rapida -->
+      <div class="panel">
+        <div class="panel-title">Conversione rapida</div>
+        <div class="field-row" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+          <label><span>Giorni</span><input id="convValue" type="number" step="0.01" value="26"></label>
+          <label><span>Da</span><select id="convFrom"><option>A</option><option selected>B</option><option>C</option></select></label>
+          <label><span>A</span><select id="convTo"><option>A</option><option>B</option><option selected>C</option></select></label>
+          <label><span>Risultato</span><div class="result-box" id="convResult">—</div></label>
+        </div>
+      </div>
+
+      <!-- Budget di progetto -->
+      <div class="panel budget-panel">
+        <div class="panel-title">Budget totale progetto</div>
+        <div class="field-row cols-2" style="margin-bottom:10px">
+          <label><span>Budget (€)</span><input id="budgetTotal" type="number" step="100" value="0" placeholder="es. 150000"></label>
+          <label><span>Avanzamento %</span><div class="result-box" id="budgetPct">—</div></label>
+        </div>
+        <div class="budget-bar-track"><div class="budget-bar-fill" id="budgetBar" style="width:0%"></div></div>
+        <div class="budget-meta"><span id="budgetSpent">Speso: — €</span><span id="budgetLeft">Residuo: — €</span></div>
+      </div>
+
+      <!-- Mesi -->
+      <div class="panel">
+        <div class="months-header">
+          <div class="panel-title" style="margin:0">Mesi</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-accent" id="addMonthBtn">+ Aggiungi</button>
+            <button class="btn btn-ghost" id="resetBtn">Reset</button>
+          </div>
+        </div>
+        <div class="month-scroller" id="monthsContainer"></div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-stack">
+
+      <!-- Tabella riepilogo -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title" style="margin:0">Riepilogo mensile</div>
+            <div style="color:var(--muted);font-size:11px;margin-top:2px">Delta positivo = risparmio vs preventivo</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Mese</th>
+              <th>Prev. (€)</th><th>Cons. (€)</th>
+              <th>Delta €</th><th>Carry-over</th>
+              <th>Δ A</th><th>Δ B</th><th>Δ C</th>
+            </tr></thead>
+            <tbody id="summaryBody"></tbody>
+            <tfoot id="summaryFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabella % burn per mese -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title" style="margin:0">Burn rate mensile</div>
+            <div style="color:var(--muted);font-size:11px;margin-top:2px">Consumo consuntivato rispetto al budget totale</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Mese</th><th>Consuntivo (€)</th><th>% su budget</th><th>Budget residuo dopo mese</th>
+            </tr></thead>
+            <tbody id="burnBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
 
 <script>
-    const costs = {A: 498.13, B: 341.49, C: 246.33};
+(function(){
+  const costs={A:498.13,B:341.49,C:246.33};
+  const fmt=n=>new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
+  const fmtE=n=>fmt(n)+' €';
+  const q=id=>document.getElementById(id);
 
-    function updateApp() {
-        const target = document.getElementById('convTarget').value;
-        const tbody = document.getElementById('summaryBody');
-        tbody.innerHTML = '';
-        
-        let totalDelta = 0, totalCarry = 0;
-        let bestDelta = -Infinity, worstDelta = Infinity;
-        let bestName = '—', worstName = '—';
+  // Theme
+  q('themeBtn').addEventListener('click',()=>document.documentElement.classList.toggle('light'));
 
-        document.querySelectorAll('.month-card').forEach(card => {
-            const vals = { prevA:0, prevB:0, prevC:0, consA:0, consB:0, consC:0 };
-            card.querySelectorAll('input.mf').forEach(i => vals[i.dataset.f] = parseFloat(i.value) || 0);
-            
-            const prev = (vals.prevA*costs.A) + (vals.prevB*costs.B) + (vals.prevC*costs.C);
-            const cons = (vals.consA*costs.A) + (vals.consB*costs.B) + (vals.consC*costs.C);
-            const delta = prev - cons;
-            const carry = ((vals.prevA-vals.consA)*costs.A + (vals.prevB-vals.consB)*costs.B + (vals.prevC-vals.consC)*costs.C) / costs[target];
-            
-            totalDelta += delta; totalCarry += carry;
-            if(delta > bestDelta) { bestDelta = delta; bestName = card.querySelector('.month-name').value; }
-            if(delta < worstDelta) { worstDelta = delta; worstName = card.querySelector('.month-name').value; }
-            
-            tbody.innerHTML += `<tr><td>${card.querySelector('.month-name').value}</td><td>${delta.toFixed(2)}</td><td>${carry.toFixed(2)} gg ${target}</td></tr>`;
-        });
+  // Cost inputs
+  ['A','B','C'].forEach(l=>{
+    q('cost'+l).addEventListener('input',function(){
+      costs[l]=parseFloat(this.value)||0;
+      updateConv();updateAll();
+    });
+  });
 
-        document.getElementById('kpiDelta').innerText = totalDelta.toFixed(2) + ' €';
-        document.getElementById('kpiCarry').innerText = totalCarry.toFixed(2) + ' gg ' + target;
-        document.getElementById('kpiBest').innerText = bestName;
-        document.getElementById('kpiWorst').innerText = worstName;
-    }
+  // Conv target
+  q('convTarget').addEventListener('change',updateAll);
 
-    function addMonth(name = "Nuovo Mese") {
-        const div = document.createElement('div');
-        div.className = 'month-card';
-        div.innerHTML = `
-            <input class="month-name" value="${name}">
-            <div class="grid-header"><div></div><div class="label-col">A</div><div class="label-col">B</div><div class="label-col">C</div></div>
-            <div class="grid-row"><div class="label-row">PREV</div>
-                <input class="mf" data-f="prevA" type="number" value="0">
-                <input class="mf" data-f="prevB" type="number" value="0">
-                <input class="mf" data-f="prevC" type="number" value="0">
-            </div>
-            <div class="grid-row"><div class="label-row">CONS</div>
-                <input class="mf" data-f="consA" type="number" value="0">
-                <input class="mf" data-f="consB" type="number" value="0">
-                <input class="mf" data-f="consC" type="number" value="0">
-            </div>`;
-        div.querySelectorAll('input').forEach(i => i.addEventListener('input', updateApp));
-        document.getElementById('monthsContainer').appendChild(div);
-        updateApp();
-    }
+  // Conversione rapida
+  function updateConv(){
+    const v=parseFloat(q('convValue').value)||0;
+    const from=q('convFrom').value, to=q('convTo').value;
+    const ct=costs[to];
+    q('convResult').textContent=ct?fmt(v*(costs[from]/ct))+' gg '+to:'—';
+  }
+  ['convValue','convFrom','convTo'].forEach(id=>{
+    q(id).addEventListener('input',updateConv);
+    q(id).addEventListener('change',updateConv);
+  });
 
-    document.getElementById('addMonthBtn').addEventListener('click', () => addMonth());
-    document.getElementById('convTarget').addEventListener('change', updateApp);
-    ['costA', 'costB', 'costC'].forEach(id => {
-        document.getElementById(id).addEventListener('input', (e) => {
-            costs[id.replace('cost', '')] = parseFloat(e.target.value) || 0;
-            updateApp();
-        });
+  // Budget bar
+  q('budgetTotal').addEventListener('input',updateAll);
+
+  function updateBudgetBar(totalCons){
+    const budget=parseFloat(q('budgetTotal').value)||0;
+    if(!budget){q('budgetPct').textContent='—';q('budgetBar').style.width='0%';q('budgetSpent').textContent='Speso: —';q('budgetLeft').textContent='Residuo: —';return;}
+    const pct=Math.min((totalCons/budget)*100,100);
+    const bar=q('budgetBar');
+    bar.style.width=pct+'%';
+    bar.className='budget-bar-fill'+(pct>=100?' over':pct>=80?' warn':'');
+    q('budgetPct').textContent=pct.toFixed(1)+' %';
+    q('budgetSpent').textContent='Speso: '+fmtE(totalCons);
+    q('budgetLeft').textContent='Residuo: '+fmtE(Math.max(budget-totalCons,0));
+  }
+
+  // Months
+  let counter=0;
+  function makeCard(name,pA,pB,pC,cA,cB,cC){
+    counter++;
+    const div=document.createElement('div');
+    div.className='month-card';
+    div.innerHTML=`
+      <div class="month-card-header">
+        <input class="month-name" value="${name}">
+        <button class="btn btn-danger rm-btn">Rimuovi</button>
+      </div>
+      <div class="grid-2rows">
+        <div></div><div class="col-label">A</div><div class="col-label">B</div><div class="col-label">C</div>
+        <div class="row-label">PREV</div>
+        <input class="mf" data-f="prevA" type="number" value="${pA}">
+        <input class="mf" data-f="prevB" type="number" value="${pB}">
+        <input class="mf" data-f="prevC" type="number" value="${pC}">
+        <div class="row-label">CONS</div>
+        <input class="mf" data-f="consA" type="number" value="${cA}">
+        <input class="mf" data-f="consB" type="number" value="${cB}">
+        <input class="mf" data-f="consC" type="number" value="${cC}">
+      </div>`;
+    div.querySelector('.rm-btn').addEventListener('click',()=>{div.remove();updateAll();});
+    div.querySelectorAll('input').forEach(i=>i.addEventListener('input',updateAll));
+    return div;
+  }
+
+  function addMonth(name='Nuovo mese',pA=0,pB=0,pC=0,cA=0,cB=0,cC=0){
+    q('monthsContainer').appendChild(makeCard(name,pA,pB,pC,cA,cB,cC));
+    updateAll();
+  }
+
+  q('addMonthBtn').addEventListener('click',()=>addMonth());
+  q('resetBtn').addEventListener('click',()=>{q('monthsContainer').innerHTML='';addMonth('Maggio',3,57,40,5,23,45);});
+
+  function updateAll(){
+    updateConv();
+    const target=q('convTarget').value;
+    const tbody=q('summaryBody'), burnBody=q('burnBody'), tfoot=q('summaryFoot');
+    tbody.innerHTML=''; burnBody.innerHTML=''; tfoot.innerHTML='';
+
+    let totalDelta=0,totalCarry=0,totalPrev=0,totalCons=0;
+    let bestDelta=-Infinity,worstDelta=Infinity,bestName='—',worstName='—';
+    let runningCons=0;
+    const budget=parseFloat(q('budgetTotal').value)||0;
+
+    document.querySelectorAll('.month-card').forEach(card=>{
+      const v={};
+      card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=parseFloat(i.value)||0);
+      const name=card.querySelector('.month-name').value||'—';
+      const prev=v.prevA*costs.A+v.prevB*costs.B+v.prevC*costs.C;
+      const cons=v.consA*costs.A+v.consB*costs.B+v.consC*costs.C;
+      const delta=prev-cons;
+      const carry=((v.prevA-v.consA)*costs.A+(v.prevB-v.consB)*costs.B+(v.prevC-v.consC)*costs.C)/costs[target];
+      const dA=(v.prevA-v.consA).toFixed(2), dB=(v.prevB-v.consB).toFixed(2), dC=(v.prevC-v.consC).toFixed(2);
+      totalDelta+=delta; totalCarry+=carry; totalPrev+=prev; totalCons+=cons;
+      runningCons+=cons;
+      if(delta>bestDelta){bestDelta=delta;bestName=name;}
+      if(delta<worstDelta){worstDelta=delta;worstName=name;}
+
+      const isPos=delta>=0;
+      tbody.innerHTML+=`<tr>
+        <td>${name}</td>
+        <td>${fmtE(prev)}</td><td>${fmtE(cons)}</td>
+        <td><span class="badge ${isPos?'badge-pos':'badge-neg'}">${isPos?'▲':'▼'}</span> ${fmtE(Math.abs(delta))}</td>
+        <td>${fmt(carry)} gg ${target}</td>
+        <td>${dA}</td><td>${dB}</td><td>${dC}</td>
+      </tr>`;
+
+      // Burn row
+      const pctBudget=budget?(runningCons/budget*100).toFixed(1):'—';
+      const residuo=budget?Math.max(budget-runningCons,0):null;
+      burnBody.innerHTML+=`<tr>
+        <td>${name}</td>
+        <td>${fmtE(cons)}</td>
+        <td>${budget?pctBudget+' %':'—'}</td>
+        <td>${residuo!==null?fmtE(residuo):'—'}</td>
+      </tr>`;
     });
 
-    addMonth('Maggio');
+    // Footer totali
+    const isTotPos=totalDelta>=0;
+    tfoot.innerHTML=`<tr style="font-weight:700;border-top:2px solid var(--border2)">
+      <td>Totale</td>
+      <td>${fmtE(totalPrev)}</td><td>${fmtE(totalCons)}</td>
+      <td><span class="badge ${isTotPos?'badge-pos':'badge-neg'}">${isTotPos?'▲':'▼'}</span> ${fmtE(Math.abs(totalDelta))}</td>
+      <td>${fmt(totalCarry)} gg ${target}</td>
+      <td colspan="3"></td>
+    </tr>`;
+
+    // KPI
+    q('kpiDelta').textContent=fmtE(totalDelta);
+    q('kpiDelta').className='kpi-value '+(totalDelta>=0?'pos':'neg');
+    q('kpiCarry').textContent=fmt(totalCarry)+' gg '+target;
+    q('kpiBest').textContent=bestName;
+    q('kpiWorst').textContent=worstName;
+    updateBudgetBar(totalCons);
+  }
+
+  // Init
+  addMonth('Maggio',3,57,40,5,23,45);
+  updateConv();
+})();
 </script>
 </body>
 </html>
