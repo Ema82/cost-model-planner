@@ -169,7 +169,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
           <label><span>Livello A</span><input id="costA" type="number" step="0.01" value="498.13"></label>
           <label><span>Livello B</span><input id="costB" type="number" step="0.01" value="341.49"></label>
           <label><span>Livello C</span><input id="costC" type="number" step="0.01" value="246.33"></label>
-          <label><span>Livello D</span><input id="costD" type="number" step="0.01" value="791.66"></label>
+          <label><span>Dirigenti</span><input id="costD" type="number" step="0.01" value="791.66"></label>
           <label><span>Esternalizzati</span><input id="costEst" type="number" step="0.01" value="325"></label>
           <label><span>Interni</span><input id="costInt" type="number" step="0.01" value="217.02"></label>
         </div>
@@ -180,7 +180,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
           <label><span>Livello target carry-over</span>
             <select id="convTarget">
               <option>A</option><option>B</option><option selected>C</option>
-              <option>D</option><option>Est</option><option>Int</option><option>Distaccati</option>
+              <option value="D">Dirigenti</option><option>Est</option><option>Int</option><option>Distaccati</option>
             </select>
           </label>
         </div>
@@ -191,8 +191,8 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         <div class="panel-title">Conversione rapida</div>
         <div class="field-row" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
           <label><span>Giorni</span><input id="convValue" type="number" step="0.01" value="26"></label>
-          <label><span>Da</span><select id="convFrom"><option>A</option><option selected>B</option><option>C</option><option>D</option><option>Est</option><option>Int</option><option>Distaccati</option></select></label>
-          <label><span>A</span><select id="convTo"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>Est</option><option>Int</option><option>Distaccati</option></select></label>
+          <label><span>Da</span><select id="convFrom"><option>A</option><option selected>B</option><option>C</option><option value="D">Dirigenti</option><option>Est</option><option>Int</option><option>Distaccati</option></select></label>
+          <label><span>A</span><select id="convTo"><option>A</option><option>B</option><option selected>C</option><option value="D">Dirigenti</option><option>Est</option><option>Int</option><option>Distaccati</option></select></label>
           <label><span>Risultato</span><div class="result-box" id="convResult">—</div></label>
         </div>
       </div>
@@ -295,6 +295,10 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
   const costs={A:498.13,B:341.49,C:246.33,D:791.66,Est:325,Int:217.02,Distaccati:350};
   const ALL_LEVELS=["A","B","C","D","Est","Int","Distaccati"];
   const EXTRA_LEVELS=["D","Est","Int","Distaccati"];
+  const EXTRA_COSTS=["Viaggi","Licenze"]; // optional €-direct costs
+  const FIXED_COSTS=["Infra","Cyber"];    // fixed €-direct costs
+  const FIXED_COST_LABELS={"Infra":"Infrastruttura","Cyber":"CyberSec"};
+  const EXTRA_COST_LABELS={"Viaggi":"Viaggi e trasferte","Licenze":"Licenze SW"};
   const fmt=n=>new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
   const fmtE=n=>fmt(n)+' €';
   const q=id=>document.getElementById(id);
@@ -360,7 +364,11 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         s.months.forEach(m=>{
           const extra={};
           EXTRA_LEVELS.forEach(l=>{extra['prev'+l]=m['prev'+l]||0;extra['cons'+l]=m['cons'+l]||0;});
-          addMonthCard(m.name,m.prevA||0,m.prevB||0,m.prevC||0,m.consA||0,m.consB||0,m.consC||0,extra);
+          const fixedCV={};
+          [...FIXED_COSTS,...EXTRA_COSTS].forEach(k=>{fixedCV['prevFC_'+k]=m['prevFC_'+k]||0;fixedCV['consFC_'+k]=m['consFC_'+k]||0;});
+          // merge FC into extra so addMonthCard can read them
+          Object.assign(extra,fixedCV);
+          addMonthCard(m.name,m.prevA||0,m.prevB||0,m.prevC||0,m.consA||0,m.consB||0,m.consC||0,extra,fixedCV);
         });
       }
       return true;
@@ -409,7 +417,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
 
   /* ── MONTHS ── */
   // extraVals: {prevD,consD,prevEst,consEst,prevInt,consInt,prevDistaccati,consDistaccati}
-  function addMonthCard(name='Nuovo mese',pA=0,pB=0,pC=0,cA=0,cB=0,cC=0,extraVals={}){
+  function addMonthCard(name='Nuovo mese',pA=0,pB=0,pC=0,cA=0,cB=0,cC=0,extraVals={},fixedCostVals={}){
     const div=document.createElement('div');
     div.className='month-card';
 
@@ -427,8 +435,25 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         <input class="mf" data-f="consC" type="number" value="${cC}">
       </div>`;
 
+    // Fixed costs grid (Infrastruttura, CyberSec)
+    const fixedCostsGrid=`
+      <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
+        <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Altri costi (€)</div>
+        <div style="display:grid;grid-template-columns:100px 1fr 1fr;gap:5px;margin-bottom:3px">
+          <div></div>
+          <div class="col-label" style="text-align:center;font-size:9px">Preventivo €</div>
+          <div class="col-label" style="text-align:center;font-size:9px">Consuntivo €</div>
+        </div>
+        ${FIXED_COSTS.map(k=>`
+        <div style="display:grid;grid-template-columns:100px 1fr 1fr;gap:5px;align-items:center;margin-bottom:3px">
+          <div class="row-label" style="font-size:9px">${FIXED_COST_LABELS[k]}</div>
+          <input class="mf" data-f="prevFC_${k}" type="number" step="0.01" value="${fixedCostVals['prevFC_'+k]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
+          <input class="mf" data-f="consFC_${k}" type="number" step="0.01" value="${fixedCostVals['consFC_'+k]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
+        </div>`).join('')}
+      </div>`;
+
     // Detect which extra levels have data saved
-    const hasExtra=EXTRA_LEVELS.some(l=>(extraVals['prev'+l]||0)+(extraVals['cons'+l]||0)>0);
+    const hasExtra=EXTRA_LEVELS.some(l=>(extraVals['prev'+l]||0)+(extraVals['cons'+l]||0)>0)||EXTRA_COSTS.some(k=>(extraVals['prevFC_'+k]||0)+(extraVals['consFC_'+k]||0)>0);
 
     div.innerHTML=`
       <div class="month-card-header">
@@ -437,6 +462,7 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         <button class="btn btn-danger rm-btn">Rimuovi</button>
       </div>
       ${baseGrid}
+      ${fixedCostsGrid}
       <div class="extra-levels" style="display:${hasExtra?'flex':'none'};flex-direction:column;gap:5px;border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
         <div style="display:grid;grid-template-columns:72px 1fr 1fr;gap:5px;margin-bottom:1px">
           <div></div>
@@ -445,9 +471,16 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
         </div>
         ${EXTRA_LEVELS.map(l=>`
         <div style="display:grid;grid-template-columns:72px 1fr 1fr;gap:5px;align-items:center">
-          <div class="row-label" style="font-size:9px">${l}</div>
+          <div class="row-label" style="font-size:9px">${l==='D'?'Dirigenti':l}</div>
           <input class="mf" data-f="prev${l}" type="number" value="${extraVals['prev'+l]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
           <input class="mf" data-f="cons${l}" type="number" value="${extraVals['cons'+l]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
+        </div>`).join('')}
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Altri costi opzionali (€)</div>
+        ${EXTRA_COSTS.map(k=>`
+        <div style="display:grid;grid-template-columns:100px 1fr 1fr;gap:5px;align-items:center;margin-bottom:3px">
+          <div class="row-label" style="font-size:9px">${EXTRA_COST_LABELS[k]}</div>
+          <input class="mf" data-f="prevFC_${k}" type="number" step="0.01" value="${extraVals['prevFC_'+k]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
+          <input class="mf" data-f="consFC_${k}" type="number" step="0.01" value="${extraVals['consFC_'+k]||0}" style="height:28px;font-size:11px;text-align:center;padding:0 4px">
         </div>`).join('')}
       </div>`;
 
@@ -490,8 +523,10 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
       const v={};
       card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=parseFloat(i.value)||0);
       const name=card.querySelector('.month-name').value||'—';
-      const prev=ALL_LEVELS.reduce((s,l)=>s+(v['prev'+l]||0)*costs[l],0);
-      const consRaw=ALL_LEVELS.reduce((s,l)=>s+(v['cons'+l]||0)*costs[l],0);
+      const prev=ALL_LEVELS.reduce((s,l)=>s+(v['prev'+l]||0)*costs[l],0)
+        +[...FIXED_COSTS,...EXTRA_COSTS].reduce((s,k)=>s+(v['prevFC_'+k]||0),0);
+      const consRaw=ALL_LEVELS.reduce((s,l)=>s+(v['cons'+l]||0)*costs[l],0)
+        +[...FIXED_COSTS,...EXTRA_COSTS].reduce((s,k)=>s+(v['consFC_'+k]||0),0);
       // Se tutti i cons sono 0, il mese non è ancora consuntivato: usa prev come cons
       // così delta=0, carry=0, CPI=1 — nessun falso positivo
       const notYetCons=ALL_LEVELS.every(l=>(v['cons'+l]||0)===0);
@@ -615,11 +650,12 @@ tfoot tr td{border-top:1px solid var(--border2);font-weight:700;border-bottom:no
 
   /* ── EXPORT CSV ── */
   q('exportBtn').addEventListener('click',()=>{
-    const hdrs=['Mese',...ALL_LEVELS.map(l=>'Prev'+l),...ALL_LEVELS.map(l=>'Cons'+l)];
+    const FC_KEYS=[...FIXED_COSTS,...EXTRA_COSTS];
+    const hdrs=['Mese',...ALL_LEVELS.map(l=>'Prev'+l),...FC_KEYS.map(k=>'PrevFC_'+k),...ALL_LEVELS.map(l=>'Cons'+l),...FC_KEYS.map(k=>'ConsFC_'+k)];
     const rows=[hdrs];
     document.querySelectorAll('.month-card').forEach(card=>{
       const v={};card.querySelectorAll('.mf').forEach(i=>v[i.dataset.f]=i.value||0);
-      rows.push([card.querySelector('.month-name').value,...ALL_LEVELS.map(l=>v['prev'+l]||0),...ALL_LEVELS.map(l=>v['cons'+l]||0)]);
+      rows.push([card.querySelector('.month-name').value,...ALL_LEVELS.map(l=>v['prev'+l]||0),...FC_KEYS.map(k=>v['prevFC_'+k]||0),...ALL_LEVELS.map(l=>v['cons'+l]||0),...FC_KEYS.map(k=>v['consFC_'+k]||0)]);
     });
     const csv=rows.map(r=>r.join(',')).join('\n');
     const a=document.createElement('a');
